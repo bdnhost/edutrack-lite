@@ -101,24 +101,80 @@ let expiresAt = null;
 
 $(document).ready(function() {
   requireAuth(function() {
-    // Get course ID from URL
+    // Get session ID or course ID from URL
     const urlParams = new URLSearchParams(window.location.search);
+    sessionId = urlParams.get('id');
     courseId = urlParams.get('course');
-    
-    if (!courseId) {
-      showAlert('חסר מזהה קורס', 'danger');
+
+    // If session ID is provided, load existing session
+    if (sessionId) {
+      loadExistingSession();
+    } else if (courseId) {
+      // Start new session
+      initSession();
+    } else {
+      showAlert('חסר מזהה קורס או שיעור', 'danger');
       setTimeout(() => window.location.href = 'index.html', 2000);
       return;
     }
-    
-    // Start session
-    initSession();
   });
 });
 
+function loadExistingSession() {
+  console.log('🔄 Loading existing session:', sessionId);
+
+  getSession(sessionId)
+    .done(function(response) {
+      console.log('✅ Session loaded:', response);
+      const session = response.data || response;
+
+      if (!session || !session.id) {
+        console.error('❌ Invalid session data:', session);
+        showAlert('שגיאה: נתוני שיעור לא תקינים', 'danger');
+        return;
+      }
+
+      courseId = session.course_id;
+      expiresAt = new Date(session.expires_at);
+
+      // Update UI
+      $('#courseName').text(session.course_name);
+      $('#courseInfo').text(session.institution_name || '');
+      $('#totalStudents').text(session.student_count || 0);
+
+      // Generate QR Code
+      const url = window.location.origin + window.location.pathname.replace('session.html', 'attend.html') + '?token=' + session.token;
+      console.log('QR URL:', url);
+
+      $('#qrContainer').html('');
+      new QRCode(document.getElementById('qrContainer'), {
+        text: url,
+        width: 280,
+        height: 280,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+
+      // Start timer
+      startTimer();
+
+      // Load attendance
+      loadAttendance();
+
+      // Auto-refresh every 3 seconds
+      refreshInterval = setupAutoRefresh(loadAttendance, 3000);
+    })
+    .fail(function(xhr, status, error) {
+      console.error('❌ Failed to load session:', error);
+      showAlert('שגיאה בטעינת השיעור', 'danger');
+      setTimeout(() => window.location.href = 'index.html', 2000);
+    });
+}
+
 function initSession() {
   console.log('🚀 initSession started for course:', courseId);
-  
+
   // Load course info
   getCourse(courseId)
     .done(function(response) {
@@ -132,30 +188,30 @@ function initSession() {
       console.error('❌ Failed to load course:', error);
       showAlert('שגיאה בטעינת הקורס: ' + error, 'danger');
     });
-  
+
   // Start or get active session
   console.log('📤 Starting session...');
   startSession(courseId)
     .done(function(response) {
       console.log('✅ Session started:', response);
       const session = response.data || response;
-      
+
       if (!session || !session.id) {
         console.error('❌ Invalid session data:', session);
         showAlert('שגיאה: נתוני שיעור לא תקינים', 'danger');
         return;
       }
-      
+
       sessionId = session.id;
       expiresAt = new Date(session.expires_at);
-      
+
       console.log('📱 Generating QR Code...');
       console.log('Token:', session.token);
-      
+
       // Generate QR Code
       const url = window.location.origin + window.location.pathname.replace('session.html', 'attend.html') + '?token=' + session.token;
       console.log('QR URL:', url);
-      
+
       $('#qrContainer').html('');
       new QRCode(document.getElementById('qrContainer'), {
         text: url,
@@ -165,15 +221,15 @@ function initSession() {
         colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.H
       });
-      
+
       console.log('✅ QR Code generated');
-      
+
       // Start timer
       startTimer();
-      
+
       // Load attendance
       loadAttendance();
-      
+
       // Auto-refresh every 3 seconds
       refreshInterval = setupAutoRefresh(loadAttendance, 3000);
     })
@@ -184,7 +240,7 @@ function initSession() {
         responseText: xhr.responseText,
         error: error
       });
-      
+
       let errorMsg = 'שגיאה בהתחלת השיעור';
       try {
         const response = JSON.parse(xhr.responseText);
@@ -192,7 +248,7 @@ function initSession() {
       } catch(e) {
         errorMsg += ': ' + xhr.statusText;
       }
-      
+
       showAlert(errorMsg, 'danger');
       setTimeout(() => window.location.href = 'index.html', 2000);
     });

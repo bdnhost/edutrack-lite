@@ -785,10 +785,11 @@ function importStudents(file) {
     contentType: false,
     success: function(response) {
       if (response.success) {
-        showAlert(`${response.data.imported} תלמידים יובאו בהצלחה`, 'success');
+        const importedCount = response.data.success_count || response.data.imported || 0;
+        showAlert(`${importedCount} תלמידים יובאו בהצלחה`, 'success');
         loadStudents();
         loadStats();
-        
+
         if (response.data.errors && response.data.errors.length > 0) {
           let errorsHtml = '<ul>';
           response.data.errors.forEach(err => {
@@ -830,10 +831,11 @@ function importLessons(file) {
     contentType: false,
     success: function(response) {
       if (response.success) {
-        showAlert(`${response.data.imported} מפגשים יובאו בהצלחה`, 'success');
+        const importedCount = response.data.success_count || response.data.imported || 0;
+        showAlert(`${importedCount} מפגשים יובאו בהצלחה`, 'success');
         loadLessons();
         loadStats();
-        
+
         if (response.data.errors && response.data.errors.length > 0) {
           let errorsHtml = '<ul>';
           response.data.errors.forEach(err => {
