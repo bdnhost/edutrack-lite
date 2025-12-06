@@ -1,0 +1,39 @@
+# WordPress Plugin - EduTrack Lite
+# Ignore common files
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+error_log
+debug.log
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Node modules (if using build tools)
+node_modules/
+npm-debug.log
+
+# Composer
+vendor/
+composer.lock
+
+# Build files
+dist/
+build/
+
+# Environment
+.env
+.env.local

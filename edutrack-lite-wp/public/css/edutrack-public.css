@@ -1,0 +1,117 @@
+/**
+ * EduTrack Lite - Public Styles
+ */
+
+.edutrack-dashboard,
+.edutrack-course,
+.edutrack-attend-container,
+.edutrack-session {
+    direction: rtl;
+    text-align: right;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+/* Card Styles */
+.edutrack-dashboard .card,
+.edutrack-course .card,
+.edutrack-attend-container .card,
+.edutrack-session .card {
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.edutrack-dashboard .card-header,
+.edutrack-course .card-header,
+.edutrack-attend-container .card-header,
+.edutrack-session .card-header {
+    border-radius: 8px 8px 0 0;
+    padding: 15px 20px;
+}
+
+/* Attend Container */
+.edutrack-attend-container {
+    padding: 20px;
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.edutrack-attend-container .card {
+    width: 100%;
+}
+
+.edutrack-attend-container input[type="tel"] {
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+}
+
+/* Session QR Code */
+.edutrack-session #qrcode-container {
+    display: inline-block;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.edutrack-session #qrcode-container img {
+    display: block;
+}
+
+/* Success/Error States */
+.bi-check-circle-fill {
+    color: #28a745;
+}
+
+.bi-exclamation-triangle-fill {
+    color: #dc3545;
+}
+
+/* Lists */
+.edutrack-dashboard .list-group-item {
+    border-right: 3px solid transparent;
+}
+
+.edutrack-dashboard .list-group-item:hover {
+    border-right-color: #0073aa;
+    background-color: #f8f9fa;
+}
+
+/* Icons */
+.bi {
+    margin-left: 5px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .edutrack-attend-container {
+        padding: 10px;
+    }
+
+    .edutrack-session #qrcode-container {
+        padding: 10px;
+    }
+
+    .edutrack-session #qrcode-container img {
+        max-width: 100%;
+        height: auto;
+    }
+}
+
+/* Loading States */
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Buttons */
+.btn {
+    font-family: inherit;
+}
+
+.btn-lg {
+    padding: 12px 24px;
+    font-size: 1.1rem;
+}
