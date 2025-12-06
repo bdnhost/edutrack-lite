@@ -122,9 +122,10 @@ function getSession()
         errorResponse('חסר מזהה שיעור');
     }
 
-    $sql = "SELECT s.*, c.name as course_name, c.code as course_code
+    $sql = "SELECT s.*, c.name as course_name, c.code as course_code, i.name as institution_name
             FROM attendance_sessions s
             INNER JOIN courses c ON s.course_id = c.id
+            LEFT JOIN institutions i ON c.institution_id = i.id
             WHERE s.id = ? AND c.lecturer_id = ?";
 
     $stmt = $conn->prepare($sql);
@@ -144,6 +145,13 @@ function getSession()
     $stmt->execute();
     $count = $stmt->get_result()->fetch_assoc();
     $session['attendance_count'] = $count['count'];
+
+    // הוסף מספר תלמידים בקורס
+    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM students WHERE course_id = ?");
+    $stmt->bind_param("i", $session['course_id']);
+    $stmt->execute();
+    $student_count = $stmt->get_result()->fetch_assoc();
+    $session['student_count'] = $student_count['count'];
 
     successResponse($session);
 }
