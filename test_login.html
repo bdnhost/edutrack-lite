@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>בדיקת התחברות - EduTrack Lite</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <style>
+    body { padding: 20px; }
+    .log { 
+      background: #f5f5f5; 
+      padding: 10px; 
+      margin: 10px 0; 
+      border-right: 4px solid #007bff;
+      font-family: monospace;
+      direction: ltr;
+      text-align: left;
+    }
+    .success { border-right-color: #28a745; }
+    .error { border-right-color: #dc3545; }
+    .warning { border-right-color: #ffc107; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🔍 בדיקת התחברות מפורטת</h1>
+  <hr>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5>התחבר כאן:</h5>
+      <form id="loginForm">
+        <div class="mb-3">
+          <label>אימייל:</label>
+          <input type="email" class="form-control" id="email" required>
+        </div>
+        <div class="mb-3">
+          <label>סיסמה:</label>
+          <input type="password" class="form-control" id="password" required>
+        </div>
+        <button type="submit" class="btn btn-primary">התחבר</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <h5>לוג בדיקות:</h5>
+      <div id="logContainer"></div>
+      
+      <hr>
+      
+      <button class="btn btn-info" onclick="checkAuth()">בדוק אימות</button>
+      <button class="btn btn-warning" onclick="checkSession()">בדוק סשן</button>
+      <button class="btn btn-success" onclick="goToDashboard()">עבור לדשבורד</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+const API_BASE = 'api/';
+let logCount = 0;
+
+function log(message, type = 'info') {
+  logCount++;
+  const timestamp = new Date().toLocaleTimeString('he-IL');
+  const className = type === 'success' ? 'success' : type === 'error' ? 'error' : type === 'warning' ? 'warning' : '';
+  
+  const logHtml = `
+    <div class="log ${className}">
+      <strong>[${logCount}] ${timestamp}</strong> - ${message}
+    </div>
+  `;
+  
+  $('#logContainer').append(logHtml);
+  console.log(`[${logCount}] ${message}`);
+}
+
+$(document).ready(function() {
+  log('🚀 דף בדיקה נטען', 'success');
+  
+  // בדוק אם כבר מחובר
+  setTimeout(() => {
+    log('בודק אם כבר מחובר...');
+    checkAuth();
+  }, 500);
+});
+
+$('#loginForm').on('submit', function(e) {
+  e.preventDefault();
+  
+  const email = $('#email').val().trim();
+  const password = $('#password').val();
+  
+  log('📤 שולח בקשת התחברות...', 'info');
+  log(`Email: ${email}`);
+  
+  $.ajax({
+    url: API_BASE + 'auth.php?action=login',
+    method: 'POST',
+    data: { email, password },
+    dataType: 'json',
+    xhrFields: {
+      withCredentials: true
+    }
+  })
+  .done(function(response) {
+    log('✅ התחברות הצליחה!', 'success');
+    log('Response: ' + JSON.stringify(response, null, 2));
+    
+    // המתן שנייה ובדוק אימות
+    setTimeout(() => {
+      log('⏳ ממתין שנייה...');
+      setTimeout(() => {
+        log('🔍 בודק אימות אחרי התחברות...');
+        checkAuth();
+      }, 1000);
+    }, 100);
+  })
+  .fail(function(xhr, status, error) {
+    log('❌ התחברות נכשלה!', 'error');
+    log('Status: ' + status);
+    log('Error: ' + error);
+    
+    try {
+      const response = JSON.parse(xhr.responseText);
+      log('Response: ' + JSON.stringify(response, null, 2), 'error');
+    } catch(e) {
+      log('Response Text: ' + xhr.responseText, 'error');
+    }
+  });
+});
+
+function checkAuth() {
+  log('🔍 בודק אימות...');
+  
+  $.ajax({
+    url: API_BASE + 'auth.php?action=check',
+    method: 'GET',
+    dataType: 'json',
+    xhrFields: {
+      withCredentials: true
+    }
+  })
+  .done(function(response) {
+    if (response.authenticated) {
+      log('✅ מאומת! משתמש: ' + response.user.name, 'success');
+      log('User Data: ' + JSON.stringify(response.user, null, 2), 'success');
+    } else {
+      log('❌ לא מאומת!', 'error');
+      log('Response: ' + JSON.stringify(response, null, 2), 'error');
+    }
+  })
+  .fail(function(xhr, status, error) {
+    log('❌ בדיקת אימות נכשלה!', 'error');
+    log('Status: ' + xhr.status);
+    log('Error: ' + error);
+    
+    try {
+      const response = JSON.parse(xhr.responseText);
+      log('Response: ' + JSON.stringify(response, null, 2), 'error');
+    } catch(e) {
+      log('Response Text: ' + xhr.responseText, 'error');
+    }
+  });
+}
+
+function checkSession() {
+  log('🔍 בודק סשן...');
+  window.open('api/advanced_debug.php', '_blank');
+}
+
+function goToDashboard() {
+  log('➡️ עובר לדשבורד...');
+  window.location.href = 'index.html';
+}
+
+// בדיקת cookies
+setInterval(() => {
+  const cookies = document.cookie;
+  if (cookies) {
+    console.log('🍪 Cookies:', cookies);
+  } else {
+    console.log('❌ No cookies');
+  }
+}, 5000);
+</script>
+
+</body>
+</html>

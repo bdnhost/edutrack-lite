@@ -1,0 +1,29 @@
+# EduTrack Lite - Apache Configuration
+
+# Disable Directory Browsing
+Options -Indexes
+
+# UTF-8 Encoding
+AddDefaultCharset UTF-8
+
+# Protect config file
+<Files "config.php">
+    Require all denied
+</Files>
+
+# Protect database folder files
+<FilesMatch "\.sql$">
+    Require all denied
+</FilesMatch>
+
+# Protect sensitive files
+<FilesMatch "\.(md|txt|log|bak|backup|old)$">
+    Require all denied
+</FilesMatch>
+
+# Force HTTPS (uncomment if you have SSL certificate)
+# <IfModule mod_rewrite.c>
+#     RewriteEngine On
+#     RewriteCond %{HTTPS} off
+#     RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+# </IfModule>

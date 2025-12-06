@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>בדיקת course.html - EduTrack Lite</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <style>
+    body { padding: 20px; }
+    .test-section { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+    .log-entry { padding: 5px; margin: 2px 0; font-family: monospace; font-size: 12px; }
+    .log-success { background: #d4edda; color: #155724; }
+    .log-error { background: #f8d7da; color: #721c24; }
+    .log-info { background: #d1ecf1; color: #0c5460; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>🧪 בדיקת course.html</h1>
+  <p class="text-muted">בדיקה מקיפה של טעינת נתוני קורס</p>
+
+  <div class="test-section">
+    <h3>1️⃣ בדיקת אימות</h3>
+    <button class="btn btn-primary" onclick="testAuth()">בדוק אימות</button>
+    <div id="authResult" class="mt-3"></div>
+  </div>
+
+  <div class="test-section">
+    <h3>2️⃣ בדיקת רשימת קורסים</h3>
+    <button class="btn btn-primary" onclick="testCoursesList()">טען קורסים</button>
+    <div id="coursesResult" class="mt-3"></div>
+  </div>
+
+  <div class="test-section">
+    <h3>3️⃣ בדיקת קורס בודד</h3>
+    <div class="input-group mb-3">
+      <input type="number" class="form-control" id="courseIdInput" placeholder="מזהה קורס">
+      <button class="btn btn-primary" onclick="testSingleCourse()">טען קורס</button>
+    </div>
+    <div id="singleCourseResult"></div>
+  </div>
+
+  <div class="test-section">
+    <h3>4️⃣ בדיקת תלמידים</h3>
+    <div class="input-group mb-3">
+      <input type="number" class="form-control" id="studentsIdInput" placeholder="מזהה קורס">
+      <button class="btn btn-primary" onclick="testStudents()">טען תלמידים</button>
+    </div>
+    <div id="studentsResult"></div>
+  </div>
+
+  <div class="test-section">
+    <h3>5️⃣ בדיקת סטטיסטיקות</h3>
+    <div class="input-group mb-3">
+      <input type="number" class="form-control" id="statsIdInput" placeholder="מזהה קורס">
+      <button class="btn btn-primary" onclick="testStats()">טען סטטיסטיקות</button>
+    </div>
+    <div id="statsResult"></div>
+  </div>
+
+  <div class="test-section">
+    <h3>6️⃣ בדיקת בעלות קורסים</h3>
+    <button class="btn btn-warning" onclick="testOwnership()">בדוק בעלות</button>
+    <button class="btn btn-success" onclick="fixOwnership()">תקן בעלות</button>
+    <div id="ownershipResult" class="mt-3"></div>
+  </div>
+
+  <div class="test-section">
+    <h3>📋 לוג בדיקות</h3>
+    <button class="btn btn-sm btn-secondary" onclick="clearLog()">נקה לוג</button>
+    <div id="testLog" class="mt-3" style="max-height: 400px; overflow-y: auto;"></div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+function log(message, type = 'info') {
+  const timestamp = new Date().toLocaleTimeString('he-IL');
+  const entry = `<div class="log-entry log-${type}">[${timestamp}] ${message}</div>`;
+  $('#testLog').prepend(entry);
+  console.log(`[${type.toUpperCase()}]`, message);
+}
+
+function clearLog() {
+  $('#testLog').empty();
+}
+
+function testAuth() {
+  log('🔍 בודק אימות...', 'info');
+  $.ajax({
+    url: 'api/auth.php?action=check',
+    method: 'GET',
+    success: function(response) {
+      log('✅ תשובת אימות התקבלה', 'success');
+      const isAuth = response.authenticated || (response.data && response.data.authenticated);
+      const user = response.user || (response.data && response.data.user);
+      
+      if (isAuth) {
+        $('#authResult').html(`
+          <div class="alert alert-success">
+            <strong>✅ מאומת!</strong><br>
+            משתמש: ${user.name} (${user.email})<br>
+            ID: ${user.id}
+          </div>
+          <pre>${JSON.stringify(response, null, 2)}</pre>
+        `);
+        log(`✅ מאומת: ${user.name} (ID: ${user.id})`, 'success');
+      } else {
+        $('#authResult').html(`<div class="alert alert-danger">❌ לא מאומת!</div>`);
+        log('❌ לא מאומת!', 'error');
+      }
+    },
+    error: function(xhr, status, error) {
+      log(`❌ שגיאת אימות: ${error}`, 'error');
+      $('#authResult').html(`<div class="alert alert-danger">❌ שגיאה: ${error}</div>`);
+    }
+  });
+}
+
+function testCoursesList() {
+  log('📚 טוען רשימת קורסים...', 'info');
+  $.ajax({
+    url: 'api/courses.php?action=list',
+    method: 'GET',
+    success: function(response) {
+      log('✅ רשימת קורסים התקבלה', 'success');
+      if (response.success) {
+        const courses = response.data;
+        log(`📊 נמצאו ${courses.length} קורסים`, 'success');
+        
+        let html = `<div class="alert alert-success">נמצאו ${courses.length} קורסים</div>`;
+        if (courses.length > 0) {
+          html += '<ul class="list-group">';
+          courses.forEach(course => {
+            html += `
+              <li class="list-group-item">
+                <strong>${course.name}</strong> (ID: ${course.id})<br>
+                <small>סמסטר: ${course.semester} | תלמידים: ${course.student_count}</small>
+              </li>
+            `;
+          });
+          html += '</ul>';
+        }
+        html += `<pre class="mt-3">${JSON.stringify(response, null, 2)}</pre>`;
+        $('#coursesResult').html(html);
+      } else {
+        log(`❌ ${response.message}`, 'error');
+        $('#coursesResult').html(`<div class="alert alert-danger">${response.message}</div>`);
+      }
+    },
+    error: function(xhr, status, error) {
+      log(`❌ שגיאה בטעינת קורסים: ${error}`, 'error');
+      $('#coursesResult').html(`<div class="alert alert-danger">❌ שגיאה: ${error}</div>`);
+    }
+  });
+}
+
+function testSingleCourse() {
+  const courseId = $('#courseIdInput').val();
+  if (!courseId) {
+    alert('נא להזין מזהה קורס');
+    return;
+  }
+  
+  log(`📖 טוען קורס ${courseId}...`, 'info');
+  $.ajax({
+    url: `api/courses.php?action=get&id=${courseId}`,
+    method: 'GET',
+    success: function(response) {
+      log('✅ קורס נטען בהצלחה', 'success');
+      if (response.success) {
+        const course = response.data;
+        $('#singleCourseResult').html(`
+          <div class="alert alert-success">
+            <strong>${course.name}</strong><br>
+            מזהה: ${course.code || 'לא הוגדר'}<br>
+            סמסטר: ${course.semester}<br>
+            תלמידים: ${course.student_count}
+          </div>
+          <pre>${JSON.stringify(response, null, 2)}</pre>
+        `);
+        log(`✅ קורס: ${course.name}`, 'success');
+      } else {
+        log(`❌ ${response.message}`, 'error');
+        $('#singleCourseResult').html(`<div class="alert alert-danger">${response.message}</div>`);
+      }
+    },
+    error: function(xhr, status, error) {
+      log(`❌ שגיאה: ${error}`, 'error');
+      $('#singleCourseResult').html(`<div class="alert alert-danger">❌ שגיאה: ${error}</div>`);
+    }
+  });
+}
+
+function testStudents() {
+  const courseId = $('#studentsIdInput').val();
+  if (!courseId) {
+    alert('נא להזין מזהה קורס');
+    return;
+  }
+  
+  log(`👥 טוען תלמידים לקורס ${courseId}...`, 'info');
+  $.ajax({
+    url: `api/students.php?action=list&course_id=${courseId}`,
+    method: 'GET',
+    success: function(response) {
+      log('✅ תלמידים נטענו', 'success');
+      if (response.success) {
+        const students = response.data;
+        log(`📊 נמצאו ${students.length} תלמידים`, 'success');
+        
+        let html = `<div class="alert alert-success">נמצאו ${students.length} תלמידים</div>`;
+        if (students.length > 0) {
+          html += '<ul class="list-group">';
+          students.forEach(student => {
+            html += `
+              <li class="list-group-item">
+                ${student.first_name} ${student.last_name} - ${student.phone}
+              </li>
+            `;
+          });
+          html += '</ul>';
+        }
+        html += `<pre class="mt-3">${JSON.stringify(response, null, 2)}</pre>`;
+        $('#studentsResult').html(html);
+      } else {
+        log(`❌ ${response.message}`, 'error');
+        $('#studentsResult').html(`<div class="alert alert-danger">${response.message}</div>`);
+      }
+    },
+    error: function(xhr, status, error) {
+      log(`❌ שגיאה: ${error}`, 'error');
+      $('#studentsResult').html(`<div class="alert alert-danger">❌ שגיאה: ${error}</div>`);
+    }
+  });
+}
+
+function testStats() {
+  const courseId = $('#statsIdInput').val();
+  if (!courseId) {
+    alert('נא להזין מזהה קורס');
+    return;
+  }
+  
+  log(`📊 טוען סטטיסטיקות לקורס ${courseId}...`, 'info');
+  $.ajax({
+    url: `api/courses.php?action=stats&id=${courseId}`,
+    method: 'GET',
+    success: function(response) {
+      log('✅ סטטיסטיקות נטענו', 'success');
+      if (response.success) {
+        const stats = response.data;
+        $('#statsResult').html(`
+          <div class="alert alert-success">
+            <strong>סטטיסטיקות:</strong><br>
+            תלמידים: ${stats.total_students || 0}<br>
+            מפגשים: ${stats.total_sessions || 0}<br>
+            רשומות נוכחות: ${stats.total_attendance_records || 0}<br>
+            נוכחות ממוצעת: ${parseFloat(stats.average_attendance_percentage || 0).toFixed(1)}%
+          </div>
+          <pre>${JSON.stringify(response, null, 2)}</pre>
+        `);
+      } else {
+        log(`❌ ${response.message}`, 'error');
+        $('#statsResult').html(`<div class="alert alert-danger">${response.message}</div>`);
+      }
+    },
+    error: function(xhr, status, error) {
+      log(`❌ שגיאה: ${error}`, 'error');
+      $('#statsResult').html(`<div class="alert alert-danger">❌ שגיאה: ${error}</div>`);
+    }
+  });
+}
+
+function testOwnership() {
+  log('🔍 בודק בעלות קורסים...', 'info');
+  $.ajax({
+    url: 'api/test_session.php',
+    method: 'GET',
+    success: function(response) {
+      log('✅ בדיקת בעלות הושלמה', 'success');
+      $('#ownershipResult').html(`<pre>${JSON.stringify(response, null, 2)}</pre>`);
+    },
+    error: function(xhr, status, error) {
+      log(`❌ שגיאה: ${error}`, 'error');
+      $('#ownershipResult').html(`<div class="alert alert-danger">❌ שגיאה: ${error}</div>`);
+    }
+  });
+}
+
+function fixOwnership() {
+  if (!confirm('האם לתקן את בעלות כל הקורסים למשתמש הנוכחי?')) return;
+  
+  log('🔧 מתקן בעלות קורסים...', 'info');
+  $.ajax({
+    url: 'api/fix_courses.php',
+    method: 'GET',
+    success: function(response) {
+      log('✅ תיקון בעלות הושלם', 'success');
+      $('#ownershipResult').html(`
+        <div class="alert alert-success">
+          <strong>✅ תיקון הושלם!</strong><br>
+          ${response.message || 'הקורסים עודכנו בהצלחה'}
+        </div>
+        <pre>${JSON.stringify(response, null, 2)}</pre>
+      `);
+    },
+    error: function(xhr, status, error) {
+      log(`❌ שגיאה בתיקון: ${error}`, 'error');
+      $('#ownershipResult').html(`<div class="alert alert-danger">❌ שגיאה: ${error}</div>`);
+    }
+  });
+}
+
+$(document).ready(function() {
+  log('🚀 דף בדיקה נטען', 'info');
+  testAuth();
+});
+</script>
+
+</body>
+</html>

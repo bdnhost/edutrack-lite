@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>התחברות - EduTrack Lite</title>
+  
+  <!-- Bootstrap 5 RTL -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-logo">
+      <i class="bi bi-qr-code-scan" style="font-size: 3rem; color: var(--primary);"></i>
+      <h1>EduTrack Lite</h1>
+      <p class="text-muted">מערכת ניהול נוכחות חכמה</p>
+    </div>
+
+    <div id="alertContainer"></div>
+
+    <!-- Login Form -->
+    <form id="loginForm">
+      <div class="mb-3">
+        <label for="email" class="form-label">אימייל</label>
+        <input type="email" class="form-control" id="email" autocomplete="email" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="password" class="form-label">סיסמה</label>
+        <input type="password" class="form-control" id="password" autocomplete="current-password" required>
+      </div>
+
+      <div class="d-grid mb-3">
+        <button type="submit" class="btn btn-primary btn-lg" id="loginBtn">
+          <i class="bi bi-box-arrow-in-left ms-2"></i>
+          התחבר
+        </button>
+      </div>
+    </form>
+
+    <hr>
+
+    <!-- Register Toggle -->
+    <div id="registerSection">
+      <p class="text-center">
+        <a href="#" id="showRegister">אין לך חשבון? הירשם כאן</a>
+      </p>
+
+      <!-- Register Form (Initially Hidden) -->
+      <form id="registerForm" style="display: none;">
+        <h5 class="mb-3">הרשמה</h5>
+
+        <div class="mb-3">
+          <label for="regName" class="form-label">שם מלא</label>
+          <input type="text" class="form-control" id="regName" autocomplete="name" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="regEmail" class="form-label">אימייל</label>
+          <input type="email" class="form-control" id="regEmail" autocomplete="email" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="regPassword" class="form-label">סיסמה</label>
+          <input type="password" class="form-control" id="regPassword" autocomplete="new-password" required minlength="6">
+          <small class="text-muted">לפחות 6 תווים</small>
+        </div>
+
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-success" id="registerBtn">
+            <i class="bi bi-person-plus ms-2"></i>
+            הירשם
+          </button>
+          <button type="button" class="btn btn-secondary" id="showLogin">
+            חזור להתחברות
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+// ==============================================
+// EduTrack Lite - Login Page
+// ==============================================
+
+const API_BASE = 'api/';
+
+$(document).ready(function() {
+  console.log('🚀 EduTrack Lite - Login Page Loaded');
+  
+  // Check if already logged in
+  checkAuth();
+
+  // Login Form Submit
+  $('#loginForm').on('submit', function(e) {
+    e.preventDefault();
+    handleLogin();
+  });
+
+  // Register Form Submit
+  $('#registerForm').on('submit', function(e) {
+    e.preventDefault();
+    handleRegister();
+  });
+
+  // Toggle between Login and Register
+  $('#showRegister').on('click', function(e) {
+    e.preventDefault();
+    $('#loginForm').slideUp();
+    $(this).hide();
+    $('#registerForm').slideDown();
+  });
+
+  $('#showLogin').on('click', function(e) {
+    e.preventDefault();
+    $('#registerForm').slideUp();
+    $('#showRegister').show();
+    $('#loginForm').slideDown();
+  });
+});
+
+// ==============================================
+// Check if user is already authenticated
+// ==============================================
+function checkAuth() {
+  $.ajax({
+    url: API_BASE + 'auth.php?action=check',
+    method: 'GET',
+    dataType: 'json'
+  })
+  .done(function(response) {
+    console.log('✅ Auth check:', response);
+    // בדוק גם response.authenticated וגם response.data.authenticated
+    const isAuth = response.authenticated || (response.data && response.data.authenticated);
+    if (isAuth) {
+      console.log('👤 User already logged in, redirecting...');
+      window.location.href = 'index.html';
+    }
+  })
+  .fail(function(xhr, status, error) {
+    console.log('ℹ️ Not authenticated');
+  });
+}
+
+// ==============================================
+// Handle Login
+// ==============================================
+function handleLogin() {
+  const email = $('#email').val().trim();
+  const password = $('#password').val();
+  
+  if (!email || !password) {
+    showAlert('נא למלא את כל השדות', 'warning');
+    return;
+  }
+  
+  // Disable button
+  $('#loginBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>מתחבר...');
+  
+  $.ajax({
+    url: API_BASE + 'auth.php?action=login',
+    method: 'POST',
+    data: { email, password },
+    dataType: 'json'
+  })
+  .done(function(response) {
+    console.log('✅ Login successful:', response);
+    showAlert('התחברת בהצלחה! מעביר...', 'success');
+    
+    setTimeout(function() {
+      window.location.href = 'index.html';
+    }, 1000);
+  })
+  .fail(function(xhr) {
+    console.error('❌ Login failed:', xhr);
+    
+    let errorMsg = 'שגיאה בהתחברות';
+    
+    try {
+      const response = JSON.parse(xhr.responseText);
+      errorMsg = response.error || errorMsg;
+    } catch(e) {
+      if (xhr.status === 0) {
+        errorMsg = 'אין חיבור לשרת';
+      } else {
+        errorMsg = 'שגיאה: ' + xhr.status;
+      }
+    }
+    
+    showAlert(errorMsg, 'danger');
+    
+    // Re-enable button
+    $('#loginBtn').prop('disabled', false).html('<i class="bi bi-box-arrow-in-left ms-2"></i>התחבר');
+  });
+}
+
+// ==============================================
+// Handle Register
+// ==============================================
+function handleRegister() {
+  const full_name = $('#regName').val().trim();
+  const email = $('#regEmail').val().trim();
+  const password = $('#regPassword').val();
+  
+  if (!full_name || !email || !password) {
+    showAlert('נא למלא את כל השדות', 'warning');
+    return;
+  }
+  
+  if (password.length < 6) {
+    showAlert('הסיסמה חייבת להיות לפחות 6 תווים', 'warning');
+    return;
+  }
+  
+  // Disable button
+  $('#registerBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>נרשם...');
+  
+  $.ajax({
+    url: API_BASE + 'auth.php?action=register',
+    method: 'POST',
+    data: { full_name, email, password },
+    dataType: 'json'
+  })
+  .done(function(response) {
+    console.log('✅ Registration successful:', response);
+    showAlert('נרשמת בהצלחה! מעביר...', 'success');
+    
+    setTimeout(function() {
+      window.location.href = 'index.html';
+    }, 1000);
+  })
+  .fail(function(xhr) {
+    console.error('❌ Registration failed:', xhr);
+    
+    let errorMsg = 'שגיאה בהרשמה';
+    
+    try {
+      const response = JSON.parse(xhr.responseText);
+      errorMsg = response.error || errorMsg;
+    } catch(e) {
+      if (xhr.status === 0) {
+        errorMsg = 'אין חיבור לשרת';
+      } else {
+        errorMsg = 'שגיאה: ' + xhr.status;
+      }
+    }
+    
+    showAlert(errorMsg, 'danger');
+    
+    // Re-enable button
+    $('#registerBtn').prop('disabled', false).html('<i class="bi bi-person-plus ms-2"></i>הירשם');
+  });
+}
+
+// ==============================================
+// Show Alert Message
+// ==============================================
+function showAlert(message, type = 'info') {
+  const alertHtml = `
+    <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+      ${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  `;
+  
+  $('#alertContainer').html(alertHtml);
+  
+  // Auto-dismiss after 5 seconds
+  setTimeout(function() {
+    $('.alert').fadeOut(function() {
+      $(this).remove();
+    });
+  }, 5000);
+}
+</script>
+
+</body>
+</html>

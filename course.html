@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>פרטי קורס - EduTrack Lite</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
+    <a class="navbar-brand" href="index.html">
+      <i class="bi bi-qr-code-scan me-2"></i>
+      EduTrack Lite
+    </a>
+  </div>
+</nav>
+
+<div class="container mt-4">
+  <div id="alertContainer"></div>
+
+  <!-- Back Button -->
+  <button class="btn btn-outline-dark mb-4" onclick="window.location.href='index.html'">
+    <i class="bi bi-arrow-right me-2"></i>
+    חזרה לדשבורד
+  </button>
+
+  <!-- Course Header -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <h1 class="mb-2" id="courseName">טוען...</h1>
+      <p class="text-muted mb-3" id="courseInfo"></p>
+      <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#startSessionModal">
+        <i class="bi bi-play-circle me-2"></i>
+        פתח מפגש
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+      <div class="card stat-card">
+        <div class="card-body">
+          <div class="stat-icon primary">
+            <i class="bi bi-people-fill"></i>
+          </div>
+          <h3 id="studentCount">0</h3>
+          <p class="text-muted mb-0">תלמידים</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card stat-card">
+        <div class="card-body">
+          <div class="stat-icon info">
+            <i class="bi bi-journal-text"></i>
+          </div>
+          <h3 id="lessonCount">0</h3>
+          <p class="text-muted mb-0">מפגשים</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card stat-card">
+        <div class="card-body">
+          <div class="stat-icon success">
+            <i class="bi bi-calendar-check"></i>
+          </div>
+          <h3 id="sessionCount">0</h3>
+          <p class="text-muted mb-0">שיעורים</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card stat-card">
+        <div class="card-body">
+          <div class="stat-icon warning">
+            <i class="bi bi-percent"></i>
+          </div>
+          <h3 id="avgAttendance">-%</h3>
+          <p class="text-muted mb-0">נוכחות ממוצעת</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs mb-4" id="courseTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="students-tab" data-bs-toggle="tab" data-bs-target="#students" type="button">
+        <i class="bi bi-people me-2"></i>
+        תלמידים
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="lessons-tab" data-bs-toggle="tab" data-bs-target="#lessons" type="button">
+        <i class="bi bi-journal-text me-2"></i>
+        מפגשים
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="import-tab" data-bs-toggle="tab" data-bs-target="#import" type="button">
+        <i class="bi bi-upload me-2"></i>
+        ייבוא תלמידים
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="import-lessons-tab" data-bs-toggle="tab" data-bs-target="#import-lessons" type="button">
+        <i class="bi bi-upload me-2"></i>
+        ייבוא מפגשים
+      </button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="courseTabsContent">
+    <!-- Students Tab -->
+    <div class="tab-pane fade show active" id="students">
+      <div class="card">
+        <div class="card-header bg-white">
+          <div class="d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">רשימת תלמידים</h4>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addStudentModal">
+              <i class="bi bi-person-plus me-2"></i>
+              הוסף תלמיד
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="studentsContainer">
+            <!-- Students will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lessons Tab -->
+    <div class="tab-pane fade" id="lessons">
+      <div class="card">
+        <div class="card-header bg-white">
+          <div class="d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">רשימת מפגשים</h4>
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addLessonModal">
+              <i class="bi bi-plus-circle me-2"></i>
+              הוסף מפגש
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div id="lessonsContainer">
+            <!-- Lessons will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Import Students Tab -->
+    <div class="tab-pane fade" id="import">
+      <div class="card">
+        <div class="card-body">
+          <h4 class="mb-4">ייבוא תלמידים מקובץ CSV</h4>
+          
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>פורמט הקובץ:</strong> CSV עם העמודות: שם פרטי, שם משפחה, טלפון, אימייל (אופציונלי)
+            <br>
+            <a href="#" onclick="downloadStudentTemplate(); return false;" class="alert-link">
+              <i class="bi bi-download me-1"></i>
+              הורד תבנית לדוגמה
+            </a>
+          </div>
+
+          <div class="import-zone" id="importZone">
+            <input type="file" id="csvFile" accept=".csv" style="display: none;">
+            <label for="csvFile" style="cursor: pointer; display: block;">
+              <i class="bi bi-cloud-upload upload-icon"></i>
+              <h4>בחר קובץ CSV</h4>
+              <p class="text-muted">או גרור ושחרר כאן</p>
+            </label>
+          </div>
+
+          <div id="importResults" style="display: none;" class="mt-4">
+            <!-- Import results will appear here -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Import Lessons Tab -->
+    <div class="tab-pane fade" id="import-lessons">
+      <div class="card">
+        <div class="card-body">
+          <h4 class="mb-4">ייבוא מפגשים מקובץ CSV</h4>
+          
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>פורמט הקובץ:</strong> CSV עם העמודות: מספר מפגש, כותרת, תיאור, תאריך מתוכנן, שעה מתוכננת
+            <br>
+            <a href="#" onclick="downloadLessonTemplate(); return false;" class="alert-link">
+              <i class="bi bi-download me-1"></i>
+              הורד תבנית לדוגמה
+            </a>
+          </div>
+
+          <div class="import-zone" id="importLessonsZone">
+            <input type="file" id="csvLessonsFile" accept=".csv" style="display: none;">
+            <label for="csvLessonsFile" style="cursor: pointer; display: block;">
+              <i class="bi bi-cloud-upload upload-icon"></i>
+              <h4>בחר קובץ CSV</h4>
+              <p class="text-muted">או גרור ושחרר כאן</p>
+            </label>
+          </div>
+
+          <div id="importLessonsResults" style="display: none;" class="mt-4">
+            <!-- Import results will appear here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add Student -->
+<div class="modal fade" id="addStudentModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">הוספת תלמיד חדש</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addStudentForm">
+          <div class="mb-3">
+            <label class="form-label">שם פרטי *</label>
+            <input type="text" class="form-control" id="firstName" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">שם משפחה *</label>
+            <input type="text" class="form-control" id="lastName" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">טלפון *</label>
+            <input type="tel" class="form-control" id="phone" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">אימייל</label>
+            <input type="email" class="form-control" id="email">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ביטול</button>
+        <button type="button" class="btn btn-primary" onclick="addStudent()">הוסף</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add/Edit Lesson -->
+<div class="modal fade" id="addLessonModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="lessonModalTitle">הוספת מפגש חדש</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addLessonForm">
+          <input type="hidden" id="lessonId" value="">
+          <div class="mb-3">
+            <label class="form-label">מספר מפגש *</label>
+            <input type="number" class="form-control" id="lessonNumber" required min="1">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">כותרת *</label>
+            <input type="text" class="form-control" id="lessonTitle" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">תיאור</label>
+            <textarea class="form-control" id="lessonDescription" rows="3"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">תאריך מתוכנן</label>
+            <input type="date" class="form-control" id="lessonDate">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">שעה מתוכננת</label>
+            <input type="time" class="form-control" id="lessonTime">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ביטול</button>
+        <button type="button" class="btn btn-primary" onclick="saveLesson()">שמור</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Start Session -->
+<div class="modal fade" id="startSessionModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">פתיחת מפגש</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-muted">בחר מפגש או פתח מפגש כללי:</p>
+        <div id="lessonSelectContainer">
+          <div class="list-group" id="lessonSelectList">
+            <!-- Lessons for selection will be loaded here -->
+          </div>
+          <button class="btn btn-outline-primary w-100 mt-3" onclick="startGeneralSession()">
+            <i class="bi bi-play-circle me-2"></i>
+            פתח מפגש כללי (ללא קישור למפגש מסוים)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+let courseId = null;
+let currentLesson = null;
+
+$(document).ready(function() {
+  // Get course ID from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  courseId = urlParams.get('id');
+  
+  if (!courseId) {
+    showAlert('לא נמצא מזהה קורס', 'danger');
+    return;
+  }
+  
+  // Load course data
+  loadCourse();
+  loadStudents();
+  loadLessons();
+  loadStats();
+});
+
+function loadCourse() {
+  console.log('📚 Loading course:', courseId);
+  $.ajax({
+    url: `api/courses.php?action=get&id=${courseId}`,
+    method: 'GET',
+    success: function(response) {
+      console.log('✅ Course loaded:', response);
+      if (response.success) {
+        const course = response.data;
+        $('#courseName').text(course.name);
+        $('#courseInfo').text(`מזהה: ${course.code || 'לא הוגדר'} | סמסטר: ${course.semester}`);
+      } else {
+        console.error('❌ Failed to load course:', response.message);
+        showAlert(response.message || 'שגיאה בטעינת הקורס', 'danger');
+      }
+    },
+    error: function(xhr, status, error) {
+      console.error('❌ Course load error:', status, error);
+      showAlert('שגיאה בטעינת הקורס', 'danger');
+    }
+  });
+}
+
+function loadStudents() {
+  console.log('👥 Loading students for course:', courseId);
+  $.ajax({
+    url: `api/students.php?action=list&course_id=${courseId}`,
+    method: 'GET',
+    success: function(response) {
+      console.log('✅ Students loaded:', response);
+      if (response.success) {
+        const students = response.data;
+        displayStudents(students);
+      } else {
+        console.error('❌ Failed to load students:', response.message);
+        displayStudents([]);
+      }
+    },
+    error: function(xhr, status, error) {
+      console.error('❌ Students load error:', status, error);
+      displayStudents([]);
+    }
+  });
+}
+
+function loadLessons() {
+  $.ajax({
+    url: `api/lessons.php?action=list&course_id=${courseId}`,
+    method: 'GET',
+    success: function(response) {
+      if (response.success) {
+        const lessons = response.data;
+        displayLessons(lessons);
+        displayLessonsForSelection(lessons);
+      } else {
+        $('#lessonsContainer').html('<p class="text-center text-muted">טרם הוגדרו מפגשים לקורס זה</p>');
+      }
+    },
+    error: function() {
+      $('#lessonsContainer').html('<p class="text-center text-muted">טרם הוגדרו מפגשים לקורס זה</p>');
+    }
+  });
+}
+
+function loadStats() {
+  console.log('📊 Loading stats for course:', courseId);
+  
+  // Student count
+  $.ajax({
+    url: `api/students.php?action=list&course_id=${courseId}`,
+    method: 'GET',
+    success: function(response) {
+      if (response.success) {
+        $('#studentCount').text(response.data.length);
+      }
+    }
+  });
+
+  // Lesson count
+  $.ajax({
+    url: `api/lessons.php?action=list&course_id=${courseId}`,
+    method: 'GET',
+    success: function(response) {
+      if (response.success) {
+        $('#lessonCount').text(response.data.length);
+      }
+    },
+    error: function() {
+      $('#lessonCount').text('0');
+    }
+  });
+
+  // Sessions stats - use courses.php stats endpoint
+  $.ajax({
+    url: `api/courses.php?action=stats&id=${courseId}`,
+    method: 'GET',
+    success: function(response) {
+      console.log('✅ Stats loaded:', response);
+      if (response.success) {
+        $('#sessionCount').text(response.data.total_sessions || 0);
+        const avgAttendance = response.data.average_attendance_percentage || 0;
+        $('#avgAttendance').text(parseFloat(avgAttendance).toFixed(1) + '%');
+      }
+    },
+    error: function(xhr, status, error) {
+      console.error('❌ Stats load error:', status, error);
+      $('#sessionCount').text('0');
+      $('#avgAttendance').text('0%');
+    }
+  });
+}
+
+function displayStudents(students) {
+  if (!Array.isArray(students) || students.length === 0) {
+    $('#studentsContainer').html('<p class="text-center text-muted">אין תלמידים בקורס זה</p>');
+    return;
+  }
+
+  let html = `
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>שם</th>
+          <th>טלפון</th>
+          <th>אימייל</th>
+          <th>פעולות</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+  
+  students.forEach((student, index) => {
+    html += `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${student.first_name} ${student.last_name}</td>
+        <td>${formatPhone(student.phone)}</td>
+        <td>${student.email || '-'}</td>
+        <td>
+          <button class="btn btn-sm btn-danger" onclick="removeStudent(${student.id}, '${student.first_name} ${student.last_name}')">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+  
+  html += `
+      </tbody>
+    </table>
+  `;
+  
+  $('#studentsContainer').html(html);
+}
+
+function displayLessons(lessons) {
+  if (!Array.isArray(lessons) || lessons.length === 0) {
+    $('#lessonsContainer').html('<p class="text-center text-muted">טרם הוגדרו מפגשים לקורס זה</p>');
+    return;
+  }
+
+  let html = `
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>מס'</th>
+          <th>כותרת</th>
+          <th>תיאור</th>
+          <th>תאריך מתוכנן</th>
+          <th>שיעורים</th>
+          <th>נוכחות</th>
+          <th>פעולות</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+  
+  lessons.forEach((lesson) => {
+    const attendancePercent = lesson.total_students > 0 
+      ? ((lesson.total_attendances / lesson.total_students) * 100).toFixed(1) 
+      : 0;
+    
+    html += `
+      <tr>
+        <td><strong>${lesson.lesson_number}</strong></td>
+        <td>${lesson.title}</td>
+        <td>${lesson.description || '-'}</td>
+        <td>${formatDate(lesson.planned_date) || '-'}</td>
+        <td><span class="badge bg-info">${lesson.sessions_count || 0}</span></td>
+        <td><span class="badge bg-${attendancePercent > 80 ? 'success' : attendancePercent > 50 ? 'warning' : 'secondary'}">${attendancePercent}%</span></td>
+        <td>
+          <button class="btn btn-sm btn-primary" onclick="startLessonSession(${lesson.id}, '${lesson.title}')">
+            <i class="bi bi-play-circle"></i>
+          </button>
+          <button class="btn btn-sm btn-warning" onclick="editLesson(${lesson.id})">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="btn btn-sm btn-danger" onclick="deleteLesson(${lesson.id}, '${lesson.title}')">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+  
+  html += `
+      </tbody>
+    </table>
+  `;
+  
+  $('#lessonsContainer').html(html);
+}
+
+function displayLessonsForSelection(lessons) {
+  if (!Array.isArray(lessons) || lessons.length === 0) {
+    $('#lessonSelectList').html('<p class="text-center text-muted">אין מפגשים זמינים</p>');
+    return;
+  }
+
+  let html = '';
+  lessons.forEach((lesson) => {
+    html += `
+      <button class="list-group-item list-group-item-action" onclick="startLessonSession(${lesson.id}, '${lesson.title}')">
+        <div class="d-flex w-100 justify-content-between">
+          <h6 class="mb-1">מפגש ${lesson.lesson_number}: ${lesson.title}</h6>
+          <small>${formatDate(lesson.planned_date) || ''}</small>
+        </div>
+        <p class="mb-1 text-muted small">${lesson.description || ''}</p>
+      </button>
+    `;
+  });
+  
+  $('#lessonSelectList').html(html);
+}
+
+function addStudent() {
+  const firstName = $('#firstName').val().trim();
+  const lastName = $('#lastName').val().trim();
+  const phone = $('#phone').val().trim();
+  const email = $('#email').val().trim();
+  
+  if (!firstName || !lastName || !phone) {
+    showAlert('נא למלא את כל השדות הנדרשים', 'warning');
+    return;
+  }
+  
+  $.ajax({
+    url: 'api/students.php?action=create',
+    method: 'POST',
+    data: {
+      course_id: courseId,
+      first_name: firstName,
+      last_name: lastName,
+      phone: phone,
+      email: email
+    },
+    success: function(response) {
+      if (response.success) {
+        showAlert(response.message, 'success');
+        $('#addStudentModal').modal('hide');
+        $('#addStudentForm')[0].reset();
+        loadStudents();
+        loadStats();
+      } else {
+        showAlert(response.message, 'danger');
+      }
+    }
+  });
+}
+
+function removeStudent(studentId, studentName) {
+  if (!confirm(`האם למחוק את ${studentName}?`)) return;
+  
+  $.ajax({
+    url: 'api/students.php?action=delete',
+    method: 'POST',
+    data: { student_id: studentId },
+    success: function(response) {
+      if (response.success) {
+        showAlert(response.message, 'success');
+        loadStudents();
+        loadStats();
+      } else {
+        showAlert(response.message, 'danger');
+      }
+    }
+  });
+}
+
+function saveLesson() {
+  const lessonId = $('#lessonId').val();
+  const lessonNumber = $('#lessonNumber').val();
+  const title = $('#lessonTitle').val().trim();
+  const description = $('#lessonDescription').val().trim();
+  const plannedDate = $('#lessonDate').val();
+  const plannedTime = $('#lessonTime').val();
+  
+  if (!lessonNumber || !title) {
+    showAlert('נא למלא את כל השדות הנדרשים', 'warning');
+    return;
+  }
+  
+  const action = lessonId ? 'update' : 'create';
+  const data = {
+    course_id: courseId,
+    lesson_number: lessonNumber,
+    title: title,
+    description: description,
+    planned_date: plannedDate,
+    planned_time: plannedTime
+  };
+  
+  if (lessonId) {
+    data.lesson_id = lessonId;
+  }
+  
+  $.ajax({
+    url: `api/lessons.php?action=${action}`,
+    method: 'POST',
+    data: data,
+    success: function(response) {
+      if (response.success) {
+        showAlert(response.message, 'success');
+        $('#addLessonModal').modal('hide');
+        $('#addLessonForm')[0].reset();
+        $('#lessonId').val('');
+        loadLessons();
+        loadStats();
+      } else {
+        showAlert(response.message, 'danger');
+      }
+    }
+  });
+}
+
+function editLesson(lessonId) {
+  $.ajax({
+    url: `api/lessons.php?action=list&course_id=${courseId}`,
+    method: 'GET',
+    success: function(response) {
+      if (response.success) {
+        const lesson = response.data.find(l => l.id == lessonId);
+        if (lesson) {
+          $('#lessonModalTitle').text('עריכת מפגש');
+          $('#lessonId').val(lesson.id);
+          $('#lessonNumber').val(lesson.lesson_number);
+          $('#lessonTitle').val(lesson.title);
+          $('#lessonDescription').val(lesson.description || '');
+          $('#lessonDate').val(lesson.planned_date || '');
+          $('#lessonTime').val(lesson.planned_time || '');
+          $('#addLessonModal').modal('show');
+        }
+      }
+    }
+  });
+}
+
+function deleteLesson(lessonId, lessonTitle) {
+  if (!confirm(`האם למחוק את "${lessonTitle}"?`)) return;
+  
+  $.ajax({
+    url: 'api/lessons.php?action=delete',
+    method: 'POST',
+    data: { lesson_id: lessonId },
+    success: function(response) {
+      if (response.success) {
+        showAlert(response.message, 'success');
+        loadLessons();
+        loadStats();
+      } else {
+        showAlert(response.message, 'danger');
+      }
+    }
+  });
+}
+
+function startLessonSession(lessonId, lessonTitle) {
+  $.ajax({
+    url: 'api/session.php?action=start',
+    method: 'POST',
+    data: { 
+      course_id: courseId,
+      lesson_id: lessonId
+    },
+    success: function(response) {
+      if (response.success) {
+        $('#startSessionModal').modal('hide');
+        window.location.href = `session.html?id=${response.data.id}`;
+      } else {
+        showAlert(response.message, 'danger');
+      }
+    }
+  });
+}
+
+function startGeneralSession() {
+  $.ajax({
+    url: 'api/session.php?action=start',
+    method: 'POST',
+    data: { 
+      course_id: courseId
+    },
+    success: function(response) {
+      if (response.success) {
+        $('#startSessionModal').modal('hide');
+        window.location.href = `session.html?id=${response.data.id}`;
+      } else {
+        showAlert(response.message, 'danger');
+      }
+    }
+  });
+}
+
+// CSV Import - Students
+$('#csvFile').on('change', function(e) {
+  const file = e.target.files[0];
+  if (file) {
+    importStudents(file);
+  }
+});
+
+function importStudents(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('course_id', courseId);
+  
+  $.ajax({
+    url: 'api/students.php?action=import',
+    method: 'POST',
+    data: formData,
+    processData: false,
+    contentType: false,
+    success: function(response) {
+      if (response.success) {
+        showAlert(`${response.data.imported} תלמידים יובאו בהצלחה`, 'success');
+        loadStudents();
+        loadStats();
+        
+        if (response.data.errors && response.data.errors.length > 0) {
+          let errorsHtml = '<ul>';
+          response.data.errors.forEach(err => {
+            errorsHtml += `<li>${err}</li>`;
+          });
+          errorsHtml += '</ul>';
+          $('#importResults').html(`
+            <div class="alert alert-warning">
+              <strong>שגיאות:</strong>
+              ${errorsHtml}
+            </div>
+          `).show();
+        }
+      } else {
+        showAlert(response.message, 'danger');
+      }
+    }
+  });
+}
+
+// CSV Import - Lessons
+$('#csvLessonsFile').on('change', function(e) {
+  const file = e.target.files[0];
+  if (file) {
+    importLessons(file);
+  }
+});
+
+function importLessons(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('course_id', courseId);
+  
+  $.ajax({
+    url: 'api/lessons.php?action=import',
+    method: 'POST',
+    data: formData,
+    processData: false,
+    contentType: false,
+    success: function(response) {
+      if (response.success) {
+        showAlert(`${response.data.imported} מפגשים יובאו בהצלחה`, 'success');
+        loadLessons();
+        loadStats();
+        
+        if (response.data.errors && response.data.errors.length > 0) {
+          let errorsHtml = '<ul>';
+          response.data.errors.forEach(err => {
+            errorsHtml += `<li>${err}</li>`;
+          });
+          errorsHtml += '</ul>';
+          $('#importLessonsResults').html(`
+            <div class="alert alert-warning">
+              <strong>שגיאות:</strong>
+              ${errorsHtml}
+            </div>
+          `).show();
+        }
+      } else {
+        showAlert(response.message, 'danger');
+      }
+    }
+  });
+}
+
+function downloadStudentTemplate() {
+  const csv = 'שם פרטי,שם משפחה,טלפון,אימייל\nיוסי,כהן,0501234567,yossi@example.com\nרחל,לוי,0509876543,rachel@example.com';
+  const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'students_template.csv';
+  link.click();
+}
+
+function downloadLessonTemplate() {
+  const csv = 'מספר מפגש,כותרת,תיאור,תאריך מתוכנן,שעה מתוכננת\n1,מבוא למערכת,היכרות עם הכלי,2024-10-01,09:00:00\n2,יסודות התכנות,משתנים וטיפוסים,2024-10-08,09:00:00';
+  const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'lessons_template.csv';
+  link.click();
+}
+
+// Reset modal when opening for new lesson
+$('#addLessonModal').on('show.bs.modal', function (e) {
+  if (!$(e.relatedTarget).data('lesson-id')) {
+    $('#lessonModalTitle').text('הוספת מפגש חדש');
+    $('#lessonId').val('');
+    $('#addLessonForm')[0].reset();
+  }
+});
+
+function formatPhone(phone) {
+  if (!phone) return '-';
+  phone = phone.toString();
+  if (phone.startsWith('972')) {
+    return '0' + phone.substring(3);
+  }
+  return phone;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('he-IL');
+}
+
+function showAlert(message, type = 'info') {
+  const alertHtml = `
+    <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+      ${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  `;
+  $('#alertContainer').html(alertHtml);
+  
+  setTimeout(() => {
+    $('.alert').fadeOut();
+  }, 5000);
+}
+</script>
+
+</body>
+</html>

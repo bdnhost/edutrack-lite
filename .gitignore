@@ -1,0 +1,37 @@
+# EduTrack Lite - Git Ignore
+
+# Configuration
+api/config.php
+
+# Debug files (should not be in production)
+api/debug_session.php
+api/test_db.php
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+error_log
+
+# Temporary
+tmp/
+temp/
+cache/
+
+# Backup files
+*.bak
+*.backup
+*.old

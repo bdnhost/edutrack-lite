@@ -1,0 +1,485 @@
+/* EduTrack Lite - Main Stylesheet */
+/* עיצוב RTL עם Bootstrap 5 */
+
+:root {
+  --primary: #0d6efd;
+  --success: #28a745;
+  --danger: #dc3545;
+  --warning: #ffc107;
+  --info: #17a2b8;
+  --light: #f8f9fa;
+  --dark: #212529;
+  --gray: #6c757d;
+}
+
+/* RTL Support */
+body {
+  direction: rtl;
+  text-align: right;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* RTL Bootstrap fixes */
+.navbar-brand {
+  margin-right: 0;
+  margin-left: 1rem;
+}
+
+.navbar-nav .nav-link {
+  padding-right: 0.5rem;
+  padding-left: 0.5rem;
+}
+
+.dropdown-menu {
+  right: 0;
+  left: auto;
+  text-align: right;
+}
+
+.form-check {
+  padding-left: 0;
+  padding-right: 1.5em;
+}
+
+.form-check-input {
+  float: right;
+  margin-left: 0;
+  margin-right: -1.5em;
+}
+
+/* Custom Styles */
+
+/* Login Page */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.login-card {
+  max-width: 450px;
+  width: 100%;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  padding: 2rem;
+}
+
+.login-logo {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.login-logo h1 {
+  color: var(--primary);
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+/* Dashboard */
+.dashboard-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 3rem 0;
+  margin-bottom: 2rem;
+  border-radius: 0 0 20px 20px;
+}
+
+.stat-card {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+}
+
+.stat-card .card-body {
+  padding: 1.5rem;
+}
+
+.stat-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.stat-icon.primary {
+  background: rgba(13, 110, 253, 0.1);
+  color: var(--primary);
+}
+
+.stat-icon.success {
+  background: rgba(40, 167, 69, 0.1);
+  color: var(--success);
+}
+
+.stat-icon.warning {
+  background: rgba(255, 193, 7, 0.1);
+  color: var(--warning);
+}
+
+/* Course Card */
+.course-card {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.course-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.course-card .card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 1.5rem;
+}
+
+.course-badge {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+}
+
+/* Session Page (QR) */
+.session-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 2rem 0;
+}
+
+.qr-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  text-align: center;
+  position: sticky;
+  top: 2rem;
+}
+
+.qr-code-container {
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  display: inline-block;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  margin: 1.5rem auto;
+}
+
+.timer {
+  font-size: 3rem;
+  font-weight: bold;
+  color: var(--primary);
+  margin: 1rem 0;
+  font-family: 'Courier New', monospace;
+}
+
+.timer.warning {
+  color: var(--warning);
+}
+
+.timer.danger {
+  color: var(--danger);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.attendance-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.stat-box {
+  background: var(--light);
+  border-radius: 10px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.stat-box .number {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: var(--primary);
+}
+
+.stat-box .label {
+  font-size: 0.9rem;
+  color: var(--gray);
+}
+
+.progress-custom {
+  height: 12px;
+  border-radius: 10px;
+  margin: 1rem 0;
+}
+
+/* Attendance List */
+.attendance-list {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.attendance-item {
+  background: white;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.attendance-item .student-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.attendance-item .check-icon {
+  color: var(--success);
+  font-size: 1.5rem;
+}
+
+.attendance-item .student-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.attendance-item .student-phone {
+  color: var(--gray);
+  font-size: 0.9rem;
+}
+
+.attendance-item .timestamp {
+  color: var(--gray);
+  font-size: 0.9rem;
+}
+
+/* Student Attendance Page */
+.attend-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.attend-container.success {
+  background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
+}
+
+.attend-container.error {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.attend-container.default {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+}
+
+.attend-card {
+  max-width: 500px;
+  width: 100%;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.2);
+  padding: 2.5rem;
+  text-align: center;
+}
+
+.success-icon {
+  color: var(--success);
+  font-size: 5rem;
+  margin-bottom: 1rem;
+  animation: scaleIn 0.5s ease-out;
+}
+
+.error-icon {
+  color: var(--danger);
+  font-size: 5rem;
+  margin-bottom: 1rem;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+.phone-input {
+  font-size: 1.5rem;
+  text-align: center;
+  padding: 1rem;
+  border-radius: 10px;
+  border: 2px solid #dee2e6;
+  transition: border-color 0.3s;
+}
+
+.phone-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+/* Students Table */
+.students-table {
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+}
+
+.students-table thead {
+  background: var(--primary);
+  color: white;
+}
+
+.students-table tbody tr {
+  transition: background-color 0.2s;
+}
+
+.students-table tbody tr:hover {
+  background-color: var(--light);
+}
+
+/* Import Section */
+.import-zone {
+  border: 3px dashed #dee2e6;
+  border-radius: 15px;
+  padding: 3rem;
+  text-align: center;
+  background: var(--light);
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.import-zone:hover {
+  border-color: var(--primary);
+  background: rgba(13, 110, 253, 0.05);
+}
+
+.import-zone.dragover {
+  border-color: var(--success);
+  background: rgba(40, 167, 69, 0.1);
+}
+
+.upload-icon {
+  font-size: 4rem;
+  color: var(--gray);
+  margin-bottom: 1rem;
+}
+
+/* Alert Animations */
+.alert {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading Spinner */
+.spinner-container {
+  text-align: center;
+  padding: 3rem;
+}
+
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--gray);
+}
+
+.empty-state i {
+  font-size: 5rem;
+  opacity: 0.3;
+  margin-bottom: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 2rem 0;
+  }
+  
+  .timer {
+    font-size: 2rem;
+  }
+  
+  .qr-card {
+    padding: 1rem;
+  }
+  
+  .attendance-item {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+  
+  .attendance-stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .qr-code-container {
+    page-break-inside: avoid;
+  }
+}

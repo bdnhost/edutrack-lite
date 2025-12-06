@@ -1,0 +1,56 @@
+═══════════════════════════════════════════════════════
+   EduTrack Lite - הוראות מהירות לתיקון
+═══════════════════════════════════════════════════════
+
+🎯 המטרה: לתקן את הבעיה שהמשתמש נזרק חזרה ללוגאין
+
+📋 צעדים:
+
+1️⃣ פתח phpMyAdmin
+   - היכנס דרך cPanel
+   - בחר את מסד הנתונים: shlomion_EduTrack
+
+2️⃣ לחץ על "SQL" בתפריט העליון
+
+3️⃣ פתח את הקובץ: database/FULL_MIGRATION.sql
+   - העתק את כל התוכן (Ctrl+A, Ctrl+C)
+   - הדבק בחלון SQL (Ctrl+V)
+
+4️⃣ לחץ על כפתור "Go" (למטה מימין)
+
+5️⃣ המתן כמה שניות עד שהסקריפט יסתיים
+
+6️⃣ תראה הודעות כמו:
+   ✅ Part 1 completed: user_id → lecturer_id
+   ✅ Part 2 completed: lessons table created
+   ✅ Part 3 completed: lesson_id added
+   ✅ Migration Completed Successfully!
+
+7️⃣ נסה להתחבר למערכת:
+   https://bdnhost.net/edutrack-lite/
+
+8️⃣ אם עובד - מחק את הקבצים:
+   - api/debug_session.php
+   - api/test_db.php
+
+═══════════════════════════════════════════════════════
+
+❓ אם יש בעיה:
+
+1. בדוק שהסקריפט רץ בלי שגיאות
+2. רענן את הדף (F5)
+3. נקה cache של הדפדפן (Ctrl+Shift+Delete)
+4. פתח: https://bdnhost.net/edutrack-lite/api/test_db.php
+5. בדוק שכתוב: "has_lecturer_id": true
+
+═══════════════════════════════════════════════════════
+
+📞 תמיכה נוספת:
+   ראה את הקבצים:
+   - START_HERE.md
+   - FIXES_SUMMARY.md
+   - INSTALLATION.md
+
+═══════════════════════════════════════════════════════
+בהצלחה! 🚀
+═══════════════════════════════════════════════════════

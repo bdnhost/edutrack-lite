@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>דשבורד - EduTrack Lite</title>
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
+    <a class="navbar-brand" href="index.html">
+      <i class="bi bi-qr-code-scan me-2"></i>
+      EduTrack Lite
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <span class="nav-link" id="userName">טוען...</span>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#" onclick="logout()">
+            <i class="bi bi-box-arrow-right"></i>
+            התנתק
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-4">
+  <div id="alertContainer"></div>
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1>הקורסים שלי</h1>
+      <p class="text-muted">ניהול נוכחות חכם עם QR Code</p>
+    </div>
+    <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#newCourseModal">
+      <i class="bi bi-plus-circle me-2"></i>
+      קורס חדש
+    </button>
+  </div>
+
+  <!-- Stats -->
+  <div class="row mb-4">
+    <div class="col-md-4 mb-3">
+      <div class="card stat-card">
+        <div class="card-body">
+          <div class="stat-icon primary">
+            <i class="bi bi-book"></i>
+          </div>
+          <h3 id="totalCourses">0</h3>
+          <p class="text-muted mb-0">קורסים פעילים</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card stat-card">
+        <div class="card-body">
+          <div class="stat-icon success">
+            <i class="bi bi-people"></i>
+          </div>
+          <h3 id="totalStudents">0</h3>
+          <p class="text-muted mb-0">סה"כ תלמידים</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card stat-card">
+        <div class="card-body">
+          <div class="stat-icon warning">
+            <i class="bi bi-calendar-event"></i>
+          </div>
+          <h3 id="totalSessions">0</h3>
+          <p class="text-muted mb-0">שיעורים</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Courses Grid -->
+  <div id="coursesContainer" class="row">
+    <!-- Courses will be loaded here -->
+  </div>
+
+  <!-- Empty State -->
+  <div id="emptyState" class="empty-state" style="display: none;">
+    <i class="bi bi-inbox"></i>
+    <h3>אין קורסים</h3>
+    <p>צור את הקורס הראשון שלך כדי להתחיל</p>
+    <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#newCourseModal">
+      <i class="bi bi-plus-circle me-2"></i>
+      צור קורס ראשון
+    </button>
+  </div>
+</div>
+
+<!-- New Course Modal -->
+<div class="modal fade" id="newCourseModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">קורס חדש</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="newCourseForm">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="courseName" class="form-label">שם הקורס *</label>
+            <input type="text" class="form-control" id="courseName" required>
+          </div>
+          <div class="mb-3">
+            <label for="courseCode" class="form-label">קוד קורס (אופציונלי)</label>
+            <input type="text" class="form-control" id="courseCode">
+          </div>
+          <div class="mb-3">
+            <label for="institution" class="form-label">מוסד לימוד *</label>
+            <select class="form-select" id="institution" required>
+              <option value="">בחר מכללה</option>
+              <option value="1">מכללת עתיד</option>
+              <option value="2">מכללת מערב הגליל</option>
+              <option value="3">מכללת ORT</option>
+              <option value="4">אחר</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="semester" class="form-label">סמסטר *</label>
+            <select class="form-select" id="semester" required>
+              <option value="">בחר סמסטר</option>
+              <option value="סמסטר א' 2024">סמסטר א' 2024</option>
+              <option value="סמסטר ב' 2024">סמסטר ב' 2024</option>
+              <option value="סמסטר קיץ 2024">סמסטר קיץ 2024</option>
+              <option value="סמסטר א' 2025">סמסטר א' 2025</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ביטול</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-save me-2"></i>
+            צור קורס
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/main.js"></script>
+
+<script>
+$(document).ready(function() {
+  console.log('🚀 Dashboard loading...');
+  
+  // Check authentication and load data
+  requireAuth(function(response) {
+    console.log('✅ Auth successful, loading dashboard...');
+    console.log('User:', response.user);
+    
+    // Set user name
+    $('#userName').text(response.user.name);
+    
+    // Load courses
+    console.log('📚 Loading courses...');
+    loadCourses();
+  });
+
+  // New Course Form
+  $('#newCourseForm').on('submit', function(e) {
+    e.preventDefault();
+    
+    const data = {
+      name: $('#courseName').val(),
+      code: $('#courseCode').val(),
+      institution_id: $('#institution').val(),
+      semester: $('#semester').val()
+    };
+    
+    createCourse(data)
+      .done(function(response) {
+        showAlert('הקורס נוצר בהצלחה!', 'success');
+        $('#newCourseModal').modal('hide');
+        $('#newCourseForm')[0].reset();
+        loadCourses();
+      })
+      .fail(function(xhr) {
+        const error = xhr.responseJSON?.error || 'שגיאה ביצירת הקורס';
+        showAlert(error, 'danger');
+      });
+  });
+});
+
+function loadCourses() {
+  console.log('📚 loadCourses() called');
+  $('#coursesContainer').html(showLoading());
+  
+  getCourses()
+    .done(function(response) {
+      console.log('✅ Courses loaded:', response);
+      const courses = response.data || response;
+      console.log('📊 Number of courses:', courses.length);
+      
+      if (courses.length === 0) {
+        console.log('ℹ️ No courses found');
+        $('#coursesContainer').hide();
+        $('#emptyState').show();
+        return;
+      }
+      
+      console.log('📝 Rendering courses...');
+      $('#emptyState').hide();
+      $('#coursesContainer').show();
+      
+      // Update stats
+      $('#totalCourses').text(courses.length);
+      const totalStudents = courses.reduce((sum, c) => sum + parseInt(c.student_count || 0), 0);
+      const totalSessions = courses.reduce((sum, c) => sum + parseInt(c.session_count || 0), 0);
+      $('#totalStudents').text(totalStudents);
+      $('#totalSessions').text(totalSessions);
+      
+      // Render courses
+      let html = '';
+      courses.forEach(course => {
+        html += `
+          <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card course-card" onclick="goToCourse(${course.id})">
+              <div class="card-header">
+                <div class="d-flex justify-content-between align-items-start">
+                  <h5 class="mb-0">${course.name}</h5>
+                  ${course.code ? `<span class="course-badge">${course.code}</span>` : ''}
+                </div>
+                <small>${course.institution_name}</small>
+              </div>
+              <div class="card-body">
+                <p class="text-muted mb-3">
+                  <i class="bi bi-calendar3 me-1"></i>
+                  ${course.semester}
+                </p>
+                <div class="row text-center mb-3">
+                  <div class="col-6">
+                    <h4 class="mb-0">${course.student_count || 0}</h4>
+                    <small class="text-muted">תלמידים</small>
+                  </div>
+                  <div class="col-6">
+                    <h4 class="mb-0">${course.session_count || 0}</h4>
+                    <small class="text-muted">שיעורים</small>
+                  </div>
+                </div>
+                <button class="btn btn-primary w-100" onclick="event.stopPropagation(); startLesson(${course.id})">
+                  <i class="bi bi-play-circle me-2"></i>
+                  התחל שיעור
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      $('#coursesContainer').html(html);
+    })
+    .fail(function(xhr, status, error) {
+      console.error('❌ Failed to load courses:', {
+        status: xhr.status,
+        statusText: xhr.statusText,
+        error: error,
+        response: xhr.responseText
+      });
+      
+      let errorMsg = 'שגיאה בטעינת הקורסים';
+      try {
+        const response = JSON.parse(xhr.responseText);
+        errorMsg += ': ' + (response.message || response.error || xhr.statusText);
+      } catch(e) {
+        errorMsg += ': ' + xhr.statusText;
+      }
+      
+      $('#coursesContainer').html(`
+        <div class="col-12">
+          <div class="alert alert-danger">
+            ${errorMsg}
+          </div>
+        </div>
+      `);
+    });
+}
+
+function goToCourse(courseId) {
+  window.location.href = 'course.html?id=' + courseId;
+}
+
+function startLesson(courseId) {
+  console.log('🚀 Starting lesson for course:', courseId);
+  const url = 'session.html?course=' + courseId;
+  console.log('📍 Navigating to:', url);
+  window.location.href = url;
+}
+</script>
+
+</body>
+</html>

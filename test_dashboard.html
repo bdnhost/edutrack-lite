@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>בדיקת דשבורד</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container mt-5">
+  <h1>🔍 בדיקת דשבורד</h1>
+  <hr>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5>בדיקה 1: כפתור התחל שיעור</h5>
+      <button class="btn btn-primary" onclick="testStartLesson()">
+        <i class="bi bi-play-circle me-2"></i>
+        התחל שיעור (בדיקה)
+      </button>
+      <div id="result1" class="mt-3"></div>
+    </div>
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5>בדיקה 2: מעבר ישיר ל-session.html</h5>
+      <a href="session.html?course=2" class="btn btn-success">
+        עבור ל-session.html (קורס 2)
+      </a>
+      <div id="result2" class="mt-3"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <h5>Console Log:</h5>
+      <pre id="consoleLog" style="background: #f5f5f5; padding: 10px; max-height: 300px; overflow-y: auto;"></pre>
+    </div>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="js/main.js"></script>
+
+<script>
+// Capture console logs
+const originalLog = console.log;
+const originalError = console.error;
+const logs = [];
+
+console.log = function(...args) {
+  logs.push('[LOG] ' + args.join(' '));
+  updateConsoleLog();
+  originalLog.apply(console, args);
+};
+
+console.error = function(...args) {
+  logs.push('[ERROR] ' + args.join(' '));
+  updateConsoleLog();
+  originalError.apply(console, args);
+};
+
+function updateConsoleLog() {
+  $('#consoleLog').text(logs.join('\n'));
+}
+
+function testStartLesson() {
+  console.log('🚀 Testing startLesson function...');
+  
+  try {
+    if (typeof startLesson === 'undefined') {
+      $('#result1').html('<div class="alert alert-danger">❌ הפונקציה startLesson לא מוגדרת!</div>');
+      console.error('startLesson is not defined');
+      return;
+    }
+    
+    console.log('✅ startLesson function exists');
+    $('#result1').html('<div class="alert alert-info">מנסה לעבור ל-session.html...</div>');
+    
+    // Don't actually navigate, just test
+    const courseId = 2;
+    const url = 'session.html?course=' + courseId;
+    console.log('📍 Would navigate to:', url);
+    
+    $('#result1').html(`
+      <div class="alert alert-success">
+        ✅ הפונקציה עובדת!<br>
+        היה עובר ל: <code>${url}</code>
+      </div>
+    `);
+    
+  } catch(e) {
+    $('#result1').html('<div class="alert alert-danger">❌ שגיאה: ' + e.message + '</div>');
+    console.error('Error:', e);
+  }
+}
+
+$(document).ready(function() {
+  console.log('🚀 Test dashboard loaded');
+  console.log('jQuery version:', $.fn.jquery);
+  console.log('main.js loaded:', typeof checkAuth !== 'undefined');
+});
+</script>
+
+</body>
+</html>
