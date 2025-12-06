@@ -110,6 +110,10 @@ class Edutrack
         $this->loader->add_action('wp_ajax_edutrack_get_session_status', $plugin_ajax, 'get_session_status');
         $this->loader->add_action('wp_ajax_edutrack_get_attendance', $plugin_ajax, 'get_attendance');
         $this->loader->add_action('wp_ajax_edutrack_get_institutions', $plugin_ajax, 'get_institutions');
+        $this->loader->add_action('wp_ajax_edutrack_get_active_session', $plugin_ajax, 'get_active_session');
+        $this->loader->add_action('wp_ajax_edutrack_get_course_sessions', $plugin_ajax, 'get_course_sessions');
+        $this->loader->add_action('wp_ajax_edutrack_export_students', $plugin_ajax, 'export_students');
+        $this->loader->add_action('wp_ajax_edutrack_export_session_attendance', $plugin_ajax, 'export_session_attendance');
 
         // For non-logged-in users (students marking attendance)
         $this->loader->add_action('wp_ajax_nopriv_edutrack_mark_attendance', $plugin_ajax, 'mark_attendance');

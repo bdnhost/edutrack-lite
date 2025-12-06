@@ -149,7 +149,7 @@ jQuery(document).ready(function($) {
             html += '<td><span class="badge bg-primary">' + course.student_count + '</span></td>';
             html += '<td><span class="badge bg-info">' + course.session_count + '</span></td>';
             html += '<td>';
-            html += '<a href="<?php echo admin_url('admin.php?page=edutrack-courses&course_id='); ?>' + course.id + '" class="btn btn-sm btn-primary">צפה</a>';
+            html += '<a href="<?php echo admin_url('admin.php?page=edutrack-course-detail&course_id='); ?>' + course.id + '" class="btn btn-sm btn-primary">צפה</a>';
             html += '</td>';
             html += '</tr>';
         });

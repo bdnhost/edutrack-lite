@@ -145,6 +145,27 @@ class Edutrack_Admin
             'edutrack-settings',
             array($this, 'display_settings_page')
         );
+
+        // Hidden pages (not in menu, but accessible)
+        // Course Detail page
+        add_submenu_page(
+            null, // null parent = hidden from menu
+            __('Course Details', 'edutrack-lite'),
+            __('Course Details', 'edutrack-lite'),
+            'manage_edutrack_courses',
+            'edutrack-course-detail',
+            array($this, 'display_course_detail_page')
+        );
+
+        // Session View page
+        add_submenu_page(
+            null, // null parent = hidden from menu
+            __('Session View', 'edutrack-lite'),
+            __('Session View', 'edutrack-lite'),
+            'manage_edutrack_attendance',
+            'edutrack-session',
+            array($this, 'display_session_view_page')
+        );
     }
 
     /**
@@ -169,6 +190,22 @@ class Edutrack_Admin
     public function display_settings_page()
     {
         require_once EDUTRACK_PLUGIN_DIR . 'admin/pages/settings.php';
+    }
+
+    /**
+     * Render the course detail page.
+     */
+    public function display_course_detail_page()
+    {
+        require_once EDUTRACK_PLUGIN_DIR . 'admin/pages/course-detail.php';
+    }
+
+    /**
+     * Render the session view page.
+     */
+    public function display_session_view_page()
+    {
+        require_once EDUTRACK_PLUGIN_DIR . 'admin/pages/session-view.php';
     }
 
     /**

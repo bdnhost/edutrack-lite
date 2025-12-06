@@ -874,4 +874,250 @@ class Edutrack_Ajax
 
         wp_send_json_success($institutions);
     }
+
+    /**
+     * Get active session for a course.
+     */
+    public function get_active_session()
+    {
+        check_ajax_referer('edutrack_nonce', 'nonce');
+
+        if (!current_user_can('manage_edutrack_attendance')) {
+            wp_send_json_error(array('message' => 'אין לך הרשאות'), 403);
+        }
+
+        $course_id = isset($_POST['course_id']) ? intval($_POST['course_id']) : 0;
+        if (!$course_id) {
+            wp_send_json_error(array('message' => 'חסר מזהה קורס'));
+        }
+
+        global $wpdb;
+        $table_sessions = Edutrack_Database::get_table_name('attendance_sessions');
+        $table_courses = Edutrack_Database::get_table_name('courses');
+        $user_id = get_current_user_id();
+
+        // Verify ownership
+        $owner = $wpdb->get_var($wpdb->prepare(
+            "SELECT lecturer_id FROM {$table_courses} WHERE id = %d",
+            $course_id
+        ));
+
+        if ($owner != $user_id) {
+            wp_send_json_error(array('message' => 'אין לך הרשאות'), 403);
+        }
+
+        // Get active session
+        $session = $wpdb->get_row($wpdb->prepare("
+            SELECT * FROM {$table_sessions}
+            WHERE course_id = %d AND status = 'active'
+            ORDER BY started_at DESC
+            LIMIT 1
+        ", $course_id), ARRAY_A);
+
+        if ($session) {
+            wp_send_json_success($session);
+        } else {
+            wp_send_json_success(null);
+        }
+    }
+
+    /**
+     * Get all sessions for a course.
+     */
+    public function get_course_sessions()
+    {
+        check_ajax_referer('edutrack_nonce', 'nonce');
+
+        if (!current_user_can('manage_edutrack_attendance')) {
+            wp_send_json_error(array('message' => 'אין לך הרשאות'), 403);
+        }
+
+        $course_id = isset($_POST['course_id']) ? intval($_POST['course_id']) : 0;
+        if (!$course_id) {
+            wp_send_json_error(array('message' => 'חסר מזהה קורס'));
+        }
+
+        global $wpdb;
+        $table_sessions = Edutrack_Database::get_table_name('attendance_sessions');
+        $table_records = Edutrack_Database::get_table_name('attendance_records');
+        $table_courses = Edutrack_Database::get_table_name('courses');
+        $user_id = get_current_user_id();
+
+        // Verify ownership
+        $owner = $wpdb->get_var($wpdb->prepare(
+            "SELECT lecturer_id FROM {$table_courses} WHERE id = %d",
+            $course_id
+        ));
+
+        if ($owner != $user_id) {
+            wp_send_json_error(array('message' => 'אין לך הרשאות'), 403);
+        }
+
+        // Get all sessions with attendance count
+        $sessions = $wpdb->get_results($wpdb->prepare("
+            SELECT s.*,
+            (SELECT COUNT(*) FROM {$table_records} WHERE session_id = s.id) as attendance_count
+            FROM {$table_sessions} s
+            WHERE s.course_id = %d
+            ORDER BY s.started_at DESC
+        ", $course_id), ARRAY_A);
+
+        wp_send_json_success($sessions);
+    }
+
+    /**
+     * Export students to CSV.
+     */
+    public function export_students()
+    {
+        // Verify nonce
+        $nonce = isset($_GET['nonce']) ? $_GET['nonce'] : '';
+        if (!wp_verify_nonce($nonce, 'edutrack_nonce')) {
+            wp_die('אימות נכשל');
+        }
+
+        if (!current_user_can('manage_edutrack_students')) {
+            wp_die('אין לך הרשאות');
+        }
+
+        $course_id = isset($_GET['course_id']) ? intval($_GET['course_id']) : 0;
+        if (!$course_id) {
+            wp_die('מזהה קורס לא תקין');
+        }
+
+        global $wpdb;
+        $table_students = Edutrack_Database::get_table_name('students');
+        $table_courses = Edutrack_Database::get_table_name('courses');
+        $user_id = get_current_user_id();
+
+        // Verify ownership
+        $owner = $wpdb->get_var($wpdb->prepare(
+            "SELECT lecturer_id FROM {$table_courses} WHERE id = %d",
+            $course_id
+        ));
+
+        if ($owner != $user_id) {
+            wp_die('אין לך הרשאות');
+        }
+
+        // Get course name
+        $course = $wpdb->get_row($wpdb->prepare(
+            "SELECT name FROM {$table_courses} WHERE id = %d",
+            $course_id
+        ));
+
+        // Get students
+        $students = $wpdb->get_results($wpdb->prepare("
+            SELECT first_name, last_name, phone, email
+            FROM {$table_students}
+            WHERE course_id = %d
+            ORDER BY last_name, first_name
+        ", $course_id), ARRAY_A);
+
+        // Set headers for CSV download
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="students-' . sanitize_title($course->name) . '-' . date('Y-m-d') . '.csv"');
+
+        // Output CSV
+        $output = fopen('php://output', 'w');
+
+        // Add BOM for Excel UTF-8 support
+        fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+
+        // Headers
+        fputcsv($output, array('שם פרטי', 'שם משפחה', 'טלפון', 'אימייל'));
+
+        // Data
+        foreach ($students as $student) {
+            fputcsv($output, array(
+                $student['first_name'],
+                $student['last_name'],
+                $student['phone'],
+                $student['email']
+            ));
+        }
+
+        fclose($output);
+        exit;
+    }
+
+    /**
+     * Export session attendance to CSV.
+     */
+    public function export_session_attendance()
+    {
+        // Verify nonce
+        $nonce = isset($_GET['nonce']) ? $_GET['nonce'] : '';
+        if (!wp_verify_nonce($nonce, 'edutrack_nonce')) {
+            wp_die('אימות נכשל');
+        }
+
+        if (!current_user_can('manage_edutrack_attendance')) {
+            wp_die('אין לך הרשאות');
+        }
+
+        $session_id = isset($_GET['session_id']) ? intval($_GET['session_id']) : 0;
+        if (!$session_id) {
+            wp_die('מזהה שיעור לא תקין');
+        }
+
+        global $wpdb;
+        $table_sessions = Edutrack_Database::get_table_name('attendance_sessions');
+        $table_records = Edutrack_Database::get_table_name('attendance_records');
+        $table_students = Edutrack_Database::get_table_name('students');
+        $table_courses = Edutrack_Database::get_table_name('courses');
+
+        // Get session
+        $session = $wpdb->get_row($wpdb->prepare(
+            "SELECT s.*, c.name as course_name, c.lecturer_id
+            FROM {$table_sessions} s
+            JOIN {$table_courses} c ON s.course_id = c.id
+            WHERE s.id = %d
+        ", $session_id), ARRAY_A);
+
+        if (!$session) {
+            wp_die('שיעור לא נמצא');
+        }
+
+        $user_id = get_current_user_id();
+        if ($session['lecturer_id'] != $user_id) {
+            wp_die('אין לך הרשאות');
+        }
+
+        // Get attendance records
+        $records = $wpdb->get_results($wpdb->prepare("
+            SELECT st.first_name, st.last_name, st.phone, st.email, ar.timestamp
+            FROM {$table_records} ar
+            JOIN {$table_students} st ON ar.student_id = st.id
+            WHERE ar.session_id = %d
+            ORDER BY ar.timestamp
+        ", $session_id), ARRAY_A);
+
+        // Set headers for CSV download
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="attendance-session-' . $session_id . '-' . date('Y-m-d') . '.csv"');
+
+        // Output CSV
+        $output = fopen('php://output', 'w');
+
+        // Add BOM for Excel UTF-8 support
+        fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+
+        // Headers
+        fputcsv($output, array('שם פרטי', 'שם משפחה', 'טלפון', 'אימייל', 'זמן רישום'));
+
+        // Data
+        foreach ($records as $record) {
+            fputcsv($output, array(
+                $record['first_name'],
+                $record['last_name'],
+                $record['phone'],
+                $record['email'],
+                $record['timestamp']
+            ));
+        }
+
+        fclose($output);
+        exit;
+    }
 }

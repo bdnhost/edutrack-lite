@@ -157,7 +157,7 @@ jQuery(document).ready(function($) {
             html += '</p>';
             html += '</div>';
             html += '<div class="card-footer">';
-            html += '<a href="' + edutrackAdmin.siteUrl + '/wp-admin/admin.php?page=edutrack-courses&course_id=' + course.id + '" class="btn btn-sm btn-primary"><i class="bi bi-eye"></i> צפה</a> ';
+            html += '<a href="' + edutrackAdmin.siteUrl + '/wp-admin/admin.php?page=edutrack-course-detail&course_id=' + course.id + '" class="btn btn-sm btn-primary"><i class="bi bi-eye"></i> צפה</a> ';
             html += '<button class="btn btn-sm btn-danger btn-delete-course" data-id="' + course.id + '"><i class="bi bi-trash"></i> מחק</button>';
             html += '</div>';
             html += '</div>';
