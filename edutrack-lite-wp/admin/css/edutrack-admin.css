@@ -1,0 +1,115 @@
+/**
+ * EduTrack Lite - Admin Styles
+ */
+
+.edutrack-admin {
+    direction: rtl;
+    text-align: right;
+}
+
+.edutrack-admin .card {
+    margin-bottom: 20px;
+}
+
+.edutrack-admin .wp-heading-inline {
+    font-size: 23px;
+    font-weight: 400;
+    margin: 0;
+    padding: 9px 0 4px;
+    line-height: 1.3;
+}
+
+.edutrack-welcome {
+    font-size: 16px;
+    color: #666;
+    margin-top: 10px;
+}
+
+/* Stats Cards */
+.edutrack-admin .card.bg-primary {
+    background-color: #0073aa !important;
+}
+
+.edutrack-admin .card.bg-success {
+    background-color: #46b450 !important;
+}
+
+.edutrack-admin .card.bg-info {
+    background-color: #00a0d2 !important;
+}
+
+.edutrack-admin .card.bg-warning {
+    background-color: #ffb900 !important;
+}
+
+/* Course Cards */
+.edutrack-admin .card h5.card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.edutrack-admin .card .card-footer {
+    background-color: #f7f7f7;
+}
+
+/* Buttons */
+.edutrack-admin .btn {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+/* Tables */
+.edutrack-admin table.table {
+    direction: rtl;
+}
+
+.edutrack-admin table.table thead th {
+    background-color: #f7f7f7;
+    font-weight: 600;
+}
+
+/* Forms */
+.edutrack-admin .form-label {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+/* Modals */
+.modal {
+    direction: rtl;
+    text-align: right;
+}
+
+.modal .btn-close {
+    margin-left: auto;
+    margin-right: 0;
+}
+
+/* Responsive */
+@media (max-width: 782px) {
+    .edutrack-admin .card {
+        margin-bottom: 15px;
+    }
+
+    .edutrack-admin .col-md-6,
+    .edutrack-admin .col-md-4,
+    .edutrack-admin .col-md-3 {
+        margin-bottom: 15px;
+    }
+}
+
+/* Icons */
+.edutrack-admin .bi {
+    margin-left: 5px;
+}
+
+/* Notifications */
+.edutrack-admin .alert {
+    margin-top: 10px;
+}
+
+/* Loading spinner */
+.edutrack-admin .spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
