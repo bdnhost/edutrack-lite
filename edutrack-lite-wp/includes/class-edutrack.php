@@ -104,7 +104,12 @@ class Edutrack
         $this->loader->add_action('wp_ajax_edutrack_get_students', $plugin_ajax, 'get_students');
         $this->loader->add_action('wp_ajax_edutrack_add_student', $plugin_ajax, 'add_student');
         $this->loader->add_action('wp_ajax_edutrack_import_students', $plugin_ajax, 'import_students');
+        $this->loader->add_action('wp_ajax_edutrack_update_student', $plugin_ajax, 'update_student');
         $this->loader->add_action('wp_ajax_edutrack_delete_student', $plugin_ajax, 'delete_student');
+        $this->loader->add_action('wp_ajax_edutrack_get_lessons', $plugin_ajax, 'get_lessons');
+        $this->loader->add_action('wp_ajax_edutrack_add_lesson', $plugin_ajax, 'add_lesson');
+        $this->loader->add_action('wp_ajax_edutrack_update_lesson', $plugin_ajax, 'update_lesson');
+        $this->loader->add_action('wp_ajax_edutrack_delete_lesson', $plugin_ajax, 'delete_lesson');
         $this->loader->add_action('wp_ajax_edutrack_start_session', $plugin_ajax, 'start_session');
         $this->loader->add_action('wp_ajax_edutrack_close_session', $plugin_ajax, 'close_session');
         $this->loader->add_action('wp_ajax_edutrack_get_session_status', $plugin_ajax, 'get_session_status');

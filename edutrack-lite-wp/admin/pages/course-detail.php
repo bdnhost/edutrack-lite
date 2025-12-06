@@ -79,6 +79,11 @@ if (!$course_id) {
             </button>
         </li>
         <li class="nav-item" role="presentation">
+            <button class="nav-link" id="lessons-tab" data-bs-toggle="tab" data-bs-target="#lessons" type="button">
+                <i class="bi bi-book"></i> מפגשים מתוכננים
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
             <button class="nav-link" id="sessions-tab" data-bs-toggle="tab" data-bs-target="#sessions" type="button">
                 <i class="bi bi-calendar-event"></i> שיעורים
             </button>
@@ -169,6 +174,30 @@ if (!$course_id) {
                         <input type="text" class="form-control" id="search-students" placeholder="חיפוש תלמיד...">
                     </div>
                     <div id="students-list">
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lessons Tab -->
+        <div class="tab-pane fade" id="lessons" role="tabpanel">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-book"></i> מפגשים מתוכננים</h5>
+                    <div>
+                        <button class="btn btn-success btn-sm" id="btn-add-lesson">
+                            <i class="bi bi-plus-circle"></i> הוסף מפגש
+                        </button>
+                        <button class="btn btn-info btn-sm" id="btn-import-lessons">
+                            <i class="bi bi-upload"></i> ייבוא מפגשים
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="lessons-list">
                         <div class="text-center py-4">
                             <div class="spinner-border text-primary"></div>
                         </div>
@@ -268,7 +297,10 @@ if (!$course_id) {
                 <div class="alert alert-info">
                     <strong>פורמט הקובץ:</strong><br>
                     שורה ראשונה: כותרות (תתעלם)<br>
-                    עמודות: שם פרטי, שם משפחה, טלפון, אימייל
+                    עמודות: שם פרטי, שם משפחה, טלפון, אימייל<br>
+                    <button type="button" class="btn btn-sm btn-success mt-2" id="btn-download-template">
+                        <i class="bi bi-download"></i> הורד תבנית לדוגמה
+                    </button>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">העלה קובץ CSV</label>
@@ -276,13 +308,20 @@ if (!$course_id) {
                 </div>
                 <div class="mb-3">
                     <label class="form-label">או הדבק תוכן CSV:</label>
-                    <textarea class="form-control" id="csv-content" rows="10" placeholder="שם פרטי,שם משפחה,טלפון,אימייל
+                    <textarea class="form-control" id="csv-content" rows="8" placeholder="שם פרטי,שם משפחה,טלפון,אימייל
 יוסי,כהן,0501234567,yossi@example.com
 מיכל,לוי,0529876543,michal@example.com"></textarea>
+                    <button type="button" class="btn btn-sm btn-info mt-2" id="btn-preview-csv">
+                        <i class="bi bi-eye"></i> תצוגה מקדימה
+                    </button>
                 </div>
                 <div id="import-preview" style="display:none;">
-                    <h6>תצוגה מקדימה:</h6>
+                    <h6><i class="bi bi-table"></i> תצוגה מקדימה:</h6>
                     <div id="preview-content"></div>
+                    <div class="alert alert-warning mt-3" id="preview-warnings" style="display:none;">
+                        <strong><i class="bi bi-exclamation-triangle"></i> אזהרות:</strong>
+                        <ul id="warning-list"></ul>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -331,6 +370,139 @@ if (!$course_id) {
     </div>
 </div>
 
+<!-- Add Lesson Modal -->
+<div class="modal fade" id="addLessonModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-plus-circle"></i> הוסף מפגש מתוכנן</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-lesson-form">
+                    <div class="mb-3">
+                        <label class="form-label">מספר מפגש *</label>
+                        <input type="number" class="form-control" name="lesson_number" min="1" required>
+                        <div class="form-text">מספר סידורי של המפגש (1, 2, 3...)</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">כותרת *</label>
+                        <input type="text" class="form-control" name="title" placeholder="נושא המפגש" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">תיאור</label>
+                        <textarea class="form-control" name="description" rows="3" placeholder="תיאור המפגש (אופציונלי)"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">תאריך מתוכנן *</label>
+                            <input type="date" class="form-control" name="planned_date" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">שעה מתוכננת *</label>
+                            <input type="time" class="form-control" name="planned_time" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">משך (דקות)</label>
+                        <input type="number" class="form-control" name="duration" value="90" min="30" step="15">
+                        <div class="form-text">ברירת מחדל: 90 דקות</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ביטול</button>
+                <button type="button" class="btn btn-primary" id="btn-save-lesson">שמור</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Lesson Modal -->
+<div class="modal fade" id="editLessonModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-pencil"></i> ערוך מפגש</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-lesson-form">
+                    <input type="hidden" id="edit-lesson-id">
+                    <div class="mb-3">
+                        <label class="form-label">מספר מפגש *</label>
+                        <input type="number" class="form-control" id="edit-lesson-number" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">כותרת *</label>
+                        <input type="text" class="form-control" id="edit-lesson-title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">תיאור</label>
+                        <textarea class="form-control" id="edit-lesson-description" rows="3"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">תאריך מתוכנן *</label>
+                            <input type="date" class="form-control" id="edit-lesson-date" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">שעה מתוכננת *</label>
+                            <input type="time" class="form-control" id="edit-lesson-time" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">משך (דקות)</label>
+                        <input type="number" class="form-control" id="edit-lesson-duration" min="30" step="15">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ביטול</button>
+                <button type="button" class="btn btn-primary" id="btn-update-lesson">עדכן</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Student Modal -->
+<div class="modal fade" id="editStudentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-pencil"></i> ערוך פרטי תלמיד</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-student-form">
+                    <input type="hidden" id="edit-student-id">
+                    <div class="mb-3">
+                        <label class="form-label">שם פרטי *</label>
+                        <input type="text" class="form-control" id="edit-first-name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">שם משפחה *</label>
+                        <input type="text" class="form-control" id="edit-last-name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">טלפון *</label>
+                        <input type="tel" class="form-control" id="edit-phone" placeholder="05XXXXXXXX" required maxlength="10">
+                        <div class="form-text">10 ספרות, מתחיל ב-0</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">אימייל</label>
+                        <input type="email" class="form-control" id="edit-email">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ביטול</button>
+                <button type="button" class="btn btn-primary" id="btn-update-student">עדכן</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 jQuery(document).ready(function($) {
     const courseId = <?php echo $course_id; ?>;
@@ -346,6 +518,9 @@ jQuery(document).ready(function($) {
     modals.addStudent = new bootstrap.Modal($('#addStudentModal'));
     modals.importStudents = new bootstrap.Modal($('#importStudentsModal'));
     modals.editCourse = new bootstrap.Modal($('#editCourseModal'));
+    modals.editStudent = new bootstrap.Modal($('#editStudentModal'));
+    modals.addLesson = new bootstrap.Modal($('#addLessonModal'));
+    modals.editLesson = new bootstrap.Modal($('#editLessonModal'));
 
     // Tab change handlers
     $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
@@ -354,6 +529,9 @@ jQuery(document).ready(function($) {
         switch(target) {
             case '#students':
                 loadStudents();
+                break;
+            case '#lessons':
+                loadLessons();
                 break;
             case '#sessions':
                 loadSessions();
@@ -374,6 +552,12 @@ jQuery(document).ready(function($) {
     $('#btn-update-course').click(updateCourse);
     $('#btn-export-students').click(exportStudents);
     $('#btn-view-active-session').click(viewActiveSession);
+    $('#btn-update-student').click(updateStudent);
+    $('#btn-download-template').click(downloadCSVTemplate);
+    $('#btn-preview-csv').click(previewCSV);
+    $('#btn-add-lesson').click(() => modals.addLesson.show());
+    $('#btn-save-lesson').click(saveLesson);
+    $('#btn-update-lesson').click(updateLesson);
 
     // CSV file handler
     $('#csv-file').change(function() {
@@ -528,6 +712,8 @@ jQuery(document).ready(function($) {
             html += '<td>' + escapeHtml(student.phone) + '</td>';
             html += '<td>' + escapeHtml(student.email || '-') + '</td>';
             html += '<td>';
+            html += '<button class="btn btn-sm btn-info btn-edit-student me-1" data-student=\'' + JSON.stringify(student) + '\'>';
+            html += '<i class="bi bi-pencil"></i></button>';
             html += '<button class="btn btn-sm btn-danger btn-delete-student" data-id="' + student.id + '">';
             html += '<i class="bi bi-trash"></i></button>';
             html += '</td>';
@@ -536,6 +722,12 @@ jQuery(document).ready(function($) {
 
         html += '</tbody></table></div>';
         $('#students-list').html(html);
+
+        // Edit handlers
+        $('.btn-edit-student').click(function() {
+            const student = $(this).data('student');
+            editStudent(student);
+        });
 
         // Delete handlers
         $('.btn-delete-student').click(function() {
@@ -865,6 +1057,309 @@ jQuery(document).ready(function($) {
         window.location.href = edutrackAdmin.ajaxUrl +
             '?action=edutrack_export_students&course_id=' + courseId +
             '&nonce=' + edutrackAdmin.nonce;
+    }
+
+    function editStudent(student) {
+        $('#edit-student-id').val(student.id);
+        $('#edit-first-name').val(student.first_name);
+        $('#edit-last-name').val(student.last_name);
+        $('#edit-phone').val(student.phone);
+        $('#edit-email').val(student.email || '');
+        modals.editStudent.show();
+    }
+
+    function updateStudent() {
+        const studentId = $('#edit-student-id').val();
+        const formData = {
+            action: 'edutrack_update_student',
+            nonce: edutrackAdmin.nonce,
+            student_id: studentId,
+            first_name: $('#edit-first-name').val(),
+            last_name: $('#edit-last-name').val(),
+            phone: $('#edit-phone').val(),
+            email: $('#edit-email').val()
+        };
+
+        $.ajax({
+            url: edutrackAdmin.ajaxUrl,
+            type: 'POST',
+            data: formData,
+            success: function(response) {
+                if (response.success) {
+                    modals.editStudent.hide();
+                    loadStudents();
+                    showSuccess('התלמיד עודכן בהצלחה!');
+                } else {
+                    alert(response.data.message);
+                }
+            },
+            error: function() {
+                alert('שגיאה בעדכון התלמיד');
+            }
+        });
+    }
+
+    function downloadCSVTemplate() {
+        const template = 'שם פרטי,שם משפחה,טלפון,אימייל\n' +
+                        'יוסי,כהן,0501234567,yossi@example.com\n' +
+                        'מיכל,לוי,0529876543,michal@example.com\n' +
+                        'דוד,אברהם,0547654321,david@example.com';
+
+        const blob = new Blob(['\ufeff' + template], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'students_template.csv');
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showSuccess('תבנית CSV הורדה בהצלחה!');
+    }
+
+    function previewCSV() {
+        const csvData = $('#csv-content').val();
+        if (!csvData.trim()) {
+            alert('נא להזין או להעלות תוכן CSV');
+            return;
+        }
+
+        const lines = csvData.trim().split('\n');
+        const warnings = [];
+        let html = '<table class="table table-sm table-bordered"><thead><tr>';
+        html += '<th>#</th><th>שם פרטי</th><th>שם משפחה</th><th>טלפון</th><th>אימייל</th><th>סטטוס</th>';
+        html += '</tr></thead><tbody>';
+
+        let validCount = 0;
+        lines.forEach((line, index) => {
+            if (index === 0) return; // Skip header
+
+            const cols = line.split(',').map(col => col.trim());
+            if (cols.length < 3) return; // Skip invalid lines
+
+            const firstName = cols[0];
+            const lastName = cols[1];
+            const phone = cols[2];
+            const email = cols[3] || '';
+
+            let status = '<span class="badge bg-success">תקין</span>';
+            let rowClass = '';
+
+            // Validate phone
+            const cleanPhone = phone.replace(/\D/g, '');
+            if (cleanPhone.length !== 10 && cleanPhone.length !== 12) {
+                status = '<span class="badge bg-danger">טלפון לא תקין</span>';
+                rowClass = 'table-danger';
+                warnings.push(`שורה ${index + 1}: מספר טלפון לא תקין (${phone})`);
+            }
+
+            // Validate required fields
+            if (!firstName || !lastName) {
+                status = '<span class="badge bg-danger">שדות חסרים</span>';
+                rowClass = 'table-danger';
+                warnings.push(`שורה ${index + 1}: חסר שם פרטי או משפחה`);
+            } else {
+                validCount++;
+            }
+
+            html += `<tr class="${rowClass}">`;
+            html += `<td>${index}</td>`;
+            html += `<td>${escapeHtml(firstName)}</td>`;
+            html += `<td>${escapeHtml(lastName)}</td>`;
+            html += `<td>${escapeHtml(phone)}</td>`;
+            html += `<td>${escapeHtml(email)}</td>`;
+            html += `<td>${status}</td>`;
+            html += '</tr>';
+        });
+
+        html += '</tbody></table>';
+        html += `<div class="alert alert-info mt-2">`;
+        html += `<strong>סיכום:</strong> ${validCount} תלמידים תקינים מתוך ${lines.length - 1} שורות`;
+        html += '</div>';
+
+        $('#preview-content').html(html);
+
+        if (warnings.length > 0) {
+            let warningHtml = '';
+            warnings.forEach(w => {
+                warningHtml += `<li>${w}</li>`;
+            });
+            $('#warning-list').html(warningHtml);
+            $('#preview-warnings').show();
+        } else {
+            $('#preview-warnings').hide();
+        }
+
+        $('#import-preview').show();
+    }
+
+    function loadLessons() {
+        $.ajax({
+            url: edutrackAdmin.ajaxUrl,
+            type: 'POST',
+            data: {
+                action: 'edutrack_get_lessons',
+                nonce: edutrackAdmin.nonce,
+                course_id: courseId
+            },
+            success: function(response) {
+                if (response.success) {
+                    displayLessons(response.data);
+                } else {
+                    $('#lessons-list').html('<div class="alert alert-danger">' + response.data.message + '</div>');
+                }
+            }
+        });
+    }
+
+    function displayLessons(lessons) {
+        if (lessons.length === 0) {
+            $('#lessons-list').html('<div class="alert alert-info">אין מפגשים מתוכננים. הוסף מפגש ראשון!</div>');
+            return;
+        }
+
+        let html = '<div class="table-responsive"><table class="table table-hover">';
+        html += '<thead><tr>';
+        html += '<th>#</th><th>כותרת</th><th>תאריך</th><th>שעה</th><th>משך</th><th>סטטוס</th><th>פעולות</th>';
+        html += '</tr></thead><tbody>';
+
+        lessons.forEach((lesson, index) => {
+            const plannedDate = lesson.planned_date ? formatDate(lesson.planned_date) : '-';
+            const plannedTime = lesson.planned_time || '-';
+            const duration = lesson.duration ? lesson.duration + ' דקות' : '-';
+
+            let status = '<span class="badge bg-secondary">מתוכנן</span>';
+            if (lesson.status === 'completed') {
+                status = '<span class="badge bg-success">הושלם</span>';
+            } else if (lesson.status === 'cancelled') {
+                status = '<span class="badge bg-danger">בוטל</span>';
+            }
+
+            html += '<tr>';
+            html += '<td><strong>' + lesson.lesson_number + '</strong></td>';
+            html += '<td>' + escapeHtml(lesson.title) + '</td>';
+            html += '<td>' + plannedDate + '</td>';
+            html += '<td>' + plannedTime + '</td>';
+            html += '<td>' + duration + '</td>';
+            html += '<td>' + status + '</td>';
+            html += '<td>';
+            html += '<button class="btn btn-sm btn-info btn-edit-lesson me-1" data-lesson=\'' + JSON.stringify(lesson) + '\'>';
+            html += '<i class="bi bi-pencil"></i></button>';
+            html += '<button class="btn btn-sm btn-danger btn-delete-lesson" data-id="' + lesson.id + '">';
+            html += '<i class="bi bi-trash"></i></button>';
+            html += '</td>';
+            html += '</tr>';
+        });
+
+        html += '</tbody></table></div>';
+        $('#lessons-list').html(html);
+
+        // Edit handlers
+        $('.btn-edit-lesson').click(function() {
+            const lesson = $(this).data('lesson');
+            editLesson(lesson);
+        });
+
+        // Delete handlers
+        $('.btn-delete-lesson').click(function() {
+            if (confirm('האם אתה בטוח שברצונך למחוק מפגש זה?')) {
+                deleteLesson($(this).data('id'));
+            }
+        });
+    }
+
+    function saveLesson() {
+        const formData = {
+            action: 'edutrack_add_lesson',
+            nonce: edutrackAdmin.nonce,
+            course_id: courseId,
+            lesson_number: $('input[name="lesson_number"]').val(),
+            title: $('input[name="title"]').val(),
+            description: $('textarea[name="description"]').val(),
+            planned_date: $('input[name="planned_date"]').val(),
+            planned_time: $('input[name="planned_time"]').val(),
+            duration: $('input[name="duration"]').val()
+        };
+
+        $.ajax({
+            url: edutrackAdmin.ajaxUrl,
+            type: 'POST',
+            data: formData,
+            success: function(response) {
+                if (response.success) {
+                    modals.addLesson.hide();
+                    $('#add-lesson-form')[0].reset();
+                    loadLessons();
+                    showSuccess('המפגש נוסף בהצלחה!');
+                } else {
+                    alert(response.data.message);
+                }
+            }
+        });
+    }
+
+    function editLesson(lesson) {
+        $('#edit-lesson-id').val(lesson.id);
+        $('#edit-lesson-number').val(lesson.lesson_number);
+        $('#edit-lesson-title').val(lesson.title);
+        $('#edit-lesson-description').val(lesson.description || '');
+        $('#edit-lesson-date').val(lesson.planned_date);
+        $('#edit-lesson-time').val(lesson.planned_time);
+        $('#edit-lesson-duration').val(lesson.duration);
+        modals.editLesson.show();
+    }
+
+    function updateLesson() {
+        const lessonId = $('#edit-lesson-id').val();
+        const formData = {
+            action: 'edutrack_update_lesson',
+            nonce: edutrackAdmin.nonce,
+            lesson_id: lessonId,
+            lesson_number: $('#edit-lesson-number').val(),
+            title: $('#edit-lesson-title').val(),
+            description: $('#edit-lesson-description').val(),
+            planned_date: $('#edit-lesson-date').val(),
+            planned_time: $('#edit-lesson-time').val(),
+            duration: $('#edit-lesson-duration').val()
+        };
+
+        $.ajax({
+            url: edutrackAdmin.ajaxUrl,
+            type: 'POST',
+            data: formData,
+            success: function(response) {
+                if (response.success) {
+                    modals.editLesson.hide();
+                    loadLessons();
+                    showSuccess('המפגש עודכן בהצלחה!');
+                } else {
+                    alert(response.data.message);
+                }
+            },
+            error: function() {
+                alert('שגיאה בעדכון המפגש');
+            }
+        });
+    }
+
+    function deleteLesson(lessonId) {
+        $.ajax({
+            url: edutrackAdmin.ajaxUrl,
+            type: 'POST',
+            data: {
+                action: 'edutrack_delete_lesson',
+                nonce: edutrackAdmin.nonce,
+                lesson_id: lessonId
+            },
+            success: function(response) {
+                if (response.success) {
+                    loadLessons();
+                    showSuccess('המפגש נמחק בהצלחה!');
+                } else {
+                    alert(response.data.message);
+                }
+            }
+        });
     }
 
     function viewActiveSession() {
