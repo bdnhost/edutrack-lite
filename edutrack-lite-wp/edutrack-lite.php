@@ -3,7 +3,7 @@
  * Plugin Name: EduTrack Lite
  * Plugin URI: https://github.com/bdnhost/edutrack-lite
  * Description: מערכת ניהול נוכחות חכמה עם QR Code לוורדפרס - ניהול קורסים, תלמידים ומעקב נוכחות בזמן אמת
- * Version: 1.0.0
+ * Version: 1.1.0
  * Author: יעקב
  * Author URI: https://github.com/bdnhost
  * Text Domain: edutrack-lite
@@ -22,7 +22,7 @@ if (!defined('WPINC')) {
 /**
  * Plugin version
  */
-define('EDUTRACK_VERSION', '1.0.0');
+define('EDUTRACK_VERSION', '1.1.0');
 define('EDUTRACK_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('EDUTRACK_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('EDUTRACK_PLUGIN_BASENAME', plugin_basename(__FILE__));

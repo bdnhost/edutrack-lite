@@ -18,6 +18,9 @@ class Edutrack_Activator
         // Create database tables
         Edutrack_Database::create_tables();
 
+        // Run database migrations (for updates)
+        Edutrack_Database::run_migrations();
+
         // Add custom roles
         self::add_custom_roles();
 
