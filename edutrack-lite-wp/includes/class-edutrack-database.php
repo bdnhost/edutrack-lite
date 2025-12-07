@@ -96,6 +96,8 @@ class Edutrack_Database
             description text,
             planned_date date DEFAULT NULL,
             planned_time time DEFAULT NULL,
+            duration int(11) DEFAULT 90 COMMENT 'משך המפגש בדקות',
+            status varchar(20) DEFAULT 'planned' COMMENT 'planned, completed, cancelled',
             created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
             updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
@@ -196,5 +198,34 @@ class Edutrack_Database
     public static function update_db_version($version)
     {
         update_option('edutrack_db_version', $version);
+    }
+
+    /**
+     * Run database migrations for version updates.
+     */
+    public static function run_migrations()
+    {
+        global $wpdb;
+        $current_version = self::get_db_version();
+        $table_prefix = $wpdb->prefix . 'edutrack_';
+
+        // Migration to version 1.1.0 - Add duration and status to lessons table
+        if (version_compare($current_version, '1.1.0', '<')) {
+            $table_lessons = $table_prefix . 'lessons';
+
+            // Check if duration column exists
+            $duration_exists = $wpdb->get_results("SHOW COLUMNS FROM {$table_lessons} LIKE 'duration'");
+            if (empty($duration_exists)) {
+                $wpdb->query("ALTER TABLE {$table_lessons} ADD COLUMN duration int(11) DEFAULT 90 COMMENT 'משך המפגש בדקות' AFTER planned_time");
+            }
+
+            // Check if status column exists
+            $status_exists = $wpdb->get_results("SHOW COLUMNS FROM {$table_lessons} LIKE 'status'");
+            if (empty($status_exists)) {
+                $wpdb->query("ALTER TABLE {$table_lessons} ADD COLUMN status varchar(20) DEFAULT 'planned' COMMENT 'planned, completed, cancelled' AFTER duration");
+            }
+
+            self::update_db_version('1.1.0');
+        }
     }
 }

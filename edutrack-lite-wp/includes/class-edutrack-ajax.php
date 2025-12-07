@@ -473,6 +473,339 @@ class Edutrack_Ajax
     }
 
     /**
+     * Update student details.
+     */
+    public function update_student()
+    {
+        check_ajax_referer('edutrack_nonce', 'nonce');
+
+        if (!current_user_can('manage_edutrack_students')) {
+            wp_send_json_error(array('message' => 'אין לך הרשאות'), 403);
+        }
+
+        $student_id = isset($_POST['student_id']) ? intval($_POST['student_id']) : 0;
+        $first_name = isset($_POST['first_name']) ? sanitize_text_field($_POST['first_name']) : '';
+        $last_name = isset($_POST['last_name']) ? sanitize_text_field($_POST['last_name']) : '';
+        $phone = isset($_POST['phone']) ? sanitize_text_field($_POST['phone']) : '';
+        $email = isset($_POST['email']) ? sanitize_email($_POST['email']) : '';
+
+        if (!$student_id || empty($first_name) || empty($last_name) || empty($phone)) {
+            wp_send_json_error(array('message' => 'נא למלא את כל השדות החובה'));
+        }
+
+        // Normalize phone number
+        $phone = preg_replace('/\D/', '', $phone);
+        if (strlen($phone) === 12 && substr($phone, 0, 3) === '972') {
+            $phone = '0' . substr($phone, 3);
+        }
+        if (strlen($phone) !== 10) {
+            wp_send_json_error(array('message' => 'מספר טלפון לא תקין'));
+        }
+
+        global $wpdb;
+        $table_students = Edutrack_Database::get_table_name('students');
+        $table_courses = Edutrack_Database::get_table_name('courses');
+        $user_id = get_current_user_id();
+
+        // Verify ownership
+        $course_id = $wpdb->get_var($wpdb->prepare(
+            "SELECT course_id FROM {$table_students} WHERE id = %d",
+            $student_id
+        ));
+
+        if (!$course_id) {
+            wp_send_json_error(array('message' => 'תלמיד לא נמצא'), 404);
+        }
+
+        $owner = $wpdb->get_var($wpdb->prepare(
+            "SELECT lecturer_id FROM {$table_courses} WHERE id = %d",
+            $course_id
+        ));
+
+        if ($owner != $user_id) {
+            wp_send_json_error(array('message' => 'אין לך הרשאות'), 403);
+        }
+
+        // Check for duplicate phone (excluding current student)
+        $duplicate = $wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM {$table_students} WHERE course_id = %d AND phone = %s AND id != %d",
+            $course_id,
+            $phone,
+            $student_id
+        ));
+
+        if ($duplicate) {
+            wp_send_json_error(array('message' => 'קיים תלמיד עם מספר טלפון זהה'));
+        }
+
+        $result = $wpdb->update(
+            $table_students,
+            array(
+                'first_name' => $first_name,
+                'last_name' => $last_name,
+                'phone' => $phone,
+                'email' => $email,
+            ),
+            array('id' => $student_id),
+            array('%s', '%s', '%s', '%s'),
+            array('%d')
+        );
+
+        if ($result === false) {
+            wp_send_json_error(array('message' => 'שגיאה בעדכון התלמיד'));
+        }
+
+        wp_send_json_success(array('message' => 'התלמיד עודכן בהצלחה'));
+    }
+
+    /**
+     * Get all lessons for a course.
+     */
+    public function get_lessons()
+    {
+        check_ajax_referer('edutrack_nonce', 'nonce');
+
+        if (!current_user_can('manage_edutrack_courses')) {
+            wp_send_json_error(array('message' => 'אין לך הרשאות'), 403);
+        }
+
+        $course_id = isset($_POST['course_id']) ? intval($_POST['course_id']) : 0;
+        if (!$course_id) {
+            wp_send_json_error(array('message' => 'חסר מזהה קורס'));
+        }
+
+        global $wpdb;
+        $table_lessons = Edutrack_Database::get_table_name('lessons');
+        $table_courses = Edutrack_Database::get_table_name('courses');
+        $user_id = get_current_user_id();
+
+        // Verify ownership
+        $owner = $wpdb->get_var($wpdb->prepare(
+            "SELECT lecturer_id FROM {$table_courses} WHERE id = %d",
+            $course_id
+        ));
+
+        if ($owner != $user_id) {
+            wp_send_json_error(array('message' => 'אין לך הרשאות'), 403);
+        }
+
+        $lessons = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM {$table_lessons} WHERE course_id = %d ORDER BY lesson_number ASC",
+            $course_id
+        ), ARRAY_A);
+
+        wp_send_json_success($lessons);
+    }
+
+    /**
+     * Add a new lesson.
+     */
+    public function add_lesson()
+    {
+        check_ajax_referer('edutrack_nonce', 'nonce');
+
+        if (!current_user_can('manage_edutrack_courses')) {
+            wp_send_json_error(array('message' => 'אין לך הרשאות'), 403);
+        }
+
+        $course_id = isset($_POST['course_id']) ? intval($_POST['course_id']) : 0;
+        $lesson_number = isset($_POST['lesson_number']) ? intval($_POST['lesson_number']) : 0;
+        $title = isset($_POST['title']) ? sanitize_text_field($_POST['title']) : '';
+        $description = isset($_POST['description']) ? sanitize_textarea_field($_POST['description']) : '';
+        $planned_date = isset($_POST['planned_date']) ? sanitize_text_field($_POST['planned_date']) : '';
+        $planned_time = isset($_POST['planned_time']) ? sanitize_text_field($_POST['planned_time']) : '';
+        $duration = isset($_POST['duration']) ? intval($_POST['duration']) : 90;
+
+        if (!$course_id || !$lesson_number || empty($title) || empty($planned_date)) {
+            wp_send_json_error(array('message' => 'נא למלא את כל השדות החובה'));
+        }
+
+        global $wpdb;
+        $table_lessons = Edutrack_Database::get_table_name('lessons');
+        $table_courses = Edutrack_Database::get_table_name('courses');
+        $user_id = get_current_user_id();
+
+        // Verify ownership
+        $owner = $wpdb->get_var($wpdb->prepare(
+            "SELECT lecturer_id FROM {$table_courses} WHERE id = %d",
+            $course_id
+        ));
+
+        if ($owner != $user_id) {
+            wp_send_json_error(array('message' => 'אין לך הרשאות'), 403);
+        }
+
+        // Check for duplicate lesson number
+        $duplicate = $wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM {$table_lessons} WHERE course_id = %d AND lesson_number = %d",
+            $course_id,
+            $lesson_number
+        ));
+
+        if ($duplicate) {
+            wp_send_json_error(array('message' => 'קיים כבר מפגש עם מספר זהה'));
+        }
+
+        $result = $wpdb->insert(
+            $table_lessons,
+            array(
+                'course_id' => $course_id,
+                'lesson_number' => $lesson_number,
+                'title' => $title,
+                'description' => $description,
+                'planned_date' => $planned_date,
+                'planned_time' => $planned_time,
+                'duration' => $duration,
+                'status' => 'planned'
+            ),
+            array('%d', '%d', '%s', '%s', '%s', '%s', '%d', '%s')
+        );
+
+        if ($result === false) {
+            wp_send_json_error(array('message' => 'שגיאה ביצירת המפגש'));
+        }
+
+        wp_send_json_success(array(
+            'message' => 'המפגש נוסף בהצלחה',
+            'lesson_id' => $wpdb->insert_id
+        ));
+    }
+
+    /**
+     * Update a lesson.
+     */
+    public function update_lesson()
+    {
+        check_ajax_referer('edutrack_nonce', 'nonce');
+
+        if (!current_user_can('manage_edutrack_courses')) {
+            wp_send_json_error(array('message' => 'אין לך הרשאות'), 403);
+        }
+
+        $lesson_id = isset($_POST['lesson_id']) ? intval($_POST['lesson_id']) : 0;
+        $lesson_number = isset($_POST['lesson_number']) ? intval($_POST['lesson_number']) : 0;
+        $title = isset($_POST['title']) ? sanitize_text_field($_POST['title']) : '';
+        $description = isset($_POST['description']) ? sanitize_textarea_field($_POST['description']) : '';
+        $planned_date = isset($_POST['planned_date']) ? sanitize_text_field($_POST['planned_date']) : '';
+        $planned_time = isset($_POST['planned_time']) ? sanitize_text_field($_POST['planned_time']) : '';
+        $duration = isset($_POST['duration']) ? intval($_POST['duration']) : 90;
+
+        if (!$lesson_id || !$lesson_number || empty($title) || empty($planned_date)) {
+            wp_send_json_error(array('message' => 'נא למלא את כל השדות החובה'));
+        }
+
+        global $wpdb;
+        $table_lessons = Edutrack_Database::get_table_name('lessons');
+        $table_courses = Edutrack_Database::get_table_name('courses');
+        $user_id = get_current_user_id();
+
+        // Verify ownership
+        $course_id = $wpdb->get_var($wpdb->prepare(
+            "SELECT course_id FROM {$table_lessons} WHERE id = %d",
+            $lesson_id
+        ));
+
+        if (!$course_id) {
+            wp_send_json_error(array('message' => 'מפגש לא נמצא'), 404);
+        }
+
+        $owner = $wpdb->get_var($wpdb->prepare(
+            "SELECT lecturer_id FROM {$table_courses} WHERE id = %d",
+            $course_id
+        ));
+
+        if ($owner != $user_id) {
+            wp_send_json_error(array('message' => 'אין לך הרשאות'), 403);
+        }
+
+        // Check for duplicate lesson number (excluding current lesson)
+        $duplicate = $wpdb->get_var($wpdb->prepare(
+            "SELECT id FROM {$table_lessons} WHERE course_id = %d AND lesson_number = %d AND id != %d",
+            $course_id,
+            $lesson_number,
+            $lesson_id
+        ));
+
+        if ($duplicate) {
+            wp_send_json_error(array('message' => 'קיים כבר מפגש עם מספר זהה'));
+        }
+
+        $result = $wpdb->update(
+            $table_lessons,
+            array(
+                'lesson_number' => $lesson_number,
+                'title' => $title,
+                'description' => $description,
+                'planned_date' => $planned_date,
+                'planned_time' => $planned_time,
+                'duration' => $duration
+            ),
+            array('id' => $lesson_id),
+            array('%d', '%s', '%s', '%s', '%s', '%d'),
+            array('%d')
+        );
+
+        if ($result === false) {
+            wp_send_json_error(array('message' => 'שגיאה בעדכון המפגש'));
+        }
+
+        wp_send_json_success(array('message' => 'המפגש עודכן בהצלחה'));
+    }
+
+    /**
+     * Delete a lesson.
+     */
+    public function delete_lesson()
+    {
+        check_ajax_referer('edutrack_nonce', 'nonce');
+
+        if (!current_user_can('manage_edutrack_courses')) {
+            wp_send_json_error(array('message' => 'אין לך הרשאות'), 403);
+        }
+
+        $lesson_id = isset($_POST['lesson_id']) ? intval($_POST['lesson_id']) : 0;
+        if (!$lesson_id) {
+            wp_send_json_error(array('message' => 'חסר מזהה מפגש'));
+        }
+
+        global $wpdb;
+        $table_lessons = Edutrack_Database::get_table_name('lessons');
+        $table_courses = Edutrack_Database::get_table_name('courses');
+        $user_id = get_current_user_id();
+
+        // Verify ownership
+        $course_id = $wpdb->get_var($wpdb->prepare(
+            "SELECT course_id FROM {$table_lessons} WHERE id = %d",
+            $lesson_id
+        ));
+
+        if (!$course_id) {
+            wp_send_json_error(array('message' => 'מפגש לא נמצא'), 404);
+        }
+
+        $owner = $wpdb->get_var($wpdb->prepare(
+            "SELECT lecturer_id FROM {$table_courses} WHERE id = %d",
+            $course_id
+        ));
+
+        if ($owner != $user_id) {
+            wp_send_json_error(array('message' => 'אין לך הרשאות'), 403);
+        }
+
+        $result = $wpdb->delete(
+            $table_lessons,
+            array('id' => $lesson_id),
+            array('%d')
+        );
+
+        if ($result === false) {
+            wp_send_json_error(array('message' => 'שגיאה במחיקת המפגש'));
+        }
+
+        wp_send_json_success(array('message' => 'המפגש נמחק בהצלחה'));
+    }
+
+    /**
      * Start an attendance session.
      */
     public function start_session()
